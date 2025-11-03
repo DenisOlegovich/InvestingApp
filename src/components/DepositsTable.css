@@ -1,0 +1,160 @@
+.table-container {
+  margin-bottom: 32px;
+}
+
+.table-container h2 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.deposits-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 1400px;
+}
+
+.deposits-table thead {
+  background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+  color: white;
+}
+
+.deposits-table th {
+  padding: 16px 12px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.deposits-table tbody tr {
+  border-bottom: 1px solid #f0f0f0;
+  transition: all 0.3s ease;
+  animation: slideInRight 0.4s ease-out backwards;
+}
+
+.deposits-table tbody tr:nth-child(1) { animation-delay: 0.05s; }
+.deposits-table tbody tr:nth-child(2) { animation-delay: 0.1s; }
+.deposits-table tbody tr:nth-child(3) { animation-delay: 0.15s; }
+.deposits-table tbody tr:nth-child(4) { animation-delay: 0.2s; }
+.deposits-table tbody tr:nth-child(5) { animation-delay: 0.25s; }
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.deposits-table tbody tr:hover {
+  background-color: #f9f9f9;
+  transform: scale(1.01);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.deposits-table td {
+  padding: 14px 12px;
+  font-size: 14px;
+  color: #1a1a1a;
+}
+
+.name-cell {
+  font-weight: 500;
+  max-width: 200px;
+}
+
+.type-badge {
+  display: inline-block;
+  background: #fff3e0;
+  color: #e65100;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.amount-cell {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.value-cell {
+  font-weight: 600;
+  font-size: 15px;
+  color: #1976d2;
+}
+
+.gain-indicator {
+  font-size: 12px;
+  margin-left: 8px;
+  font-weight: 500;
+}
+
+.gain-indicator.positive {
+  color: #4caf50;
+}
+
+.rate-cell {
+  font-weight: 600;
+  color: #ff9800;
+}
+
+.income-cell {
+  color: #4caf50;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.remove-btn {
+  background: #ff5252;
+  color: white;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+  padding: 0;
+}
+
+.remove-btn:hover {
+  background: #ff1744;
+}
+
+@media (max-width: 1600px) {
+  .table-wrapper {
+    overflow-x: auto;
+  }
+}
+
