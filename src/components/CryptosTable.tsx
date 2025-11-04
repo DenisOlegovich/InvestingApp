@@ -23,6 +23,12 @@ export const CryptosTable: React.FC<CryptosTableProps> = ({
     return null;
   }
 
+  const handleRemove = (id: string, name: string) => {
+    if (window.confirm(`Вы уверены, что хотите удалить "${name}"?`)) {
+      onRemove(id);
+    }
+  };
+
   const handleStartEdit = (id: string, currentAmount: number) => {
     setEditingId(id);
     setEditValue(currentAmount.toString());
@@ -93,12 +99,13 @@ export const CryptosTable: React.FC<CryptosTableProps> = ({
 
               return (
                 <tr key={crypto.id} className={updatingPrices ? 'updating' : ''}>
-                  <td className="name-cell">{crypto.name}</td>
-                  <td className="symbol-cell">
+                  <td className="name-cell" data-label="Название">{crypto.name}</td>
+                  <td className="symbol-cell" data-label="Символ">
                     <span className="symbol-badge">{crypto.symbol}</span>
                   </td>
                   <td 
-                    className="amount-cell" 
+                    className="amount-cell"
+                    data-label="Количество"
                     onClick={() => handleStartEdit(crypto.id, crypto.amount)}
                     title="Нажмите для изменения"
                   >
@@ -122,19 +129,19 @@ export const CryptosTable: React.FC<CryptosTableProps> = ({
                       </span>
                     )}
                   </td>
-                  <td className="price-cell">
+                  <td className="price-cell" data-label="Текущая цена">
                     ${crypto.currentPrice.toLocaleString('ru-RU', { 
                       minimumFractionDigits: 2, 
                       maximumFractionDigits: 2 
                     })}
                   </td>
-                  <td>
+                  <td data-label="Предыдущая цена">
                     ${crypto.previousPrice.toLocaleString('ru-RU', { 
                       minimumFractionDigits: 2, 
                       maximumFractionDigits: 2 
                     })}
                   </td>
-                  <td className={`change-cell ${isPositive ? 'positive' : 'negative'}`}>
+                  <td className={`change-cell ${isPositive ? 'positive' : 'negative'}`} data-label="Изменение">
                     <span>
                       {isPositive ? '+' : ''}${priceChange.toLocaleString('ru-RU', { 
                         minimumFractionDigits: 2, 
@@ -145,16 +152,16 @@ export const CryptosTable: React.FC<CryptosTableProps> = ({
                       ({isPositive ? '+' : ''}{priceChangePercent.toFixed(2)}%)
                     </span>
                   </td>
-                  <td className="total-cell">
+                  <td className="total-cell" data-label="Общая стоимость">
                     ${totalValue.toLocaleString('ru-RU', { 
                       minimumFractionDigits: 2, 
                       maximumFractionDigits: 2 
                     })}
                   </td>
-                  <td className="staking-cell">
+                  <td className="staking-cell" data-label="Стейкинг доходность">
                     {crypto.stakingYield ? `${crypto.stakingYield.toFixed(2)}% год.` : '—'}
                   </td>
-                  <td className="income-cell">
+                  <td className="income-cell" data-label="Месячный доход">
                     {monthlyStakingIncome > 0 
                       ? `$${monthlyStakingIncome.toLocaleString('ru-RU', { 
                           maximumFractionDigits: 2 
@@ -162,7 +169,7 @@ export const CryptosTable: React.FC<CryptosTableProps> = ({
                       : '—'
                     }
                   </td>
-                  <td className={crypto.purchasePrice ? `gain-cell ${isGainPositive ? 'positive' : 'negative'}` : ''}>
+                  <td className={crypto.purchasePrice ? `gain-cell ${isGainPositive ? 'positive' : 'negative'}` : ''} data-label="Прирост стоимости">
                     {crypto.purchasePrice ? (
                       <>
                         <span>
@@ -177,10 +184,10 @@ export const CryptosTable: React.FC<CryptosTableProps> = ({
                       </>
                     ) : '—'}
                   </td>
-                  <td>
+                  <td data-label="Действия">
                     <button 
                       className="remove-btn" 
-                      onClick={() => onRemove(crypto.id)}
+                      onClick={() => handleRemove(crypto.id, crypto.name)}
                       title="Удалить"
                     >
                       ×

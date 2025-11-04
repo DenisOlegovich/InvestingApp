@@ -23,6 +23,12 @@ export const SecuritiesTable: React.FC<SecuritiesTableProps> = ({
     return null;
   }
 
+  const handleRemove = (id: string, name: string) => {
+    if (window.confirm(`Вы уверены, что хотите удалить "${name}"?`)) {
+      onRemove(id);
+    }
+  };
+
   const handleStartEdit = (id: string, currentQuantity: number) => {
     setEditingId(id);
     setEditValue(currentQuantity.toString());
@@ -121,13 +127,14 @@ export const SecuritiesTable: React.FC<SecuritiesTableProps> = ({
 
               return (
                 <tr key={security.id} className={updatingPrices ? 'updating' : ''}>
-                  <td className="name-cell">{security.name}</td>
-                  <td className="ticker-cell">
+                  <td className="name-cell" data-label="Название">{security.name}</td>
+                  <td className="ticker-cell" data-label="Тикер">
                     <span className="ticker-badge">{security.ticker}</span>
                   </td>
-                  <td>{getTypeLabel(security.type)}</td>
+                  <td data-label="Тип">{getTypeLabel(security.type)}</td>
                   <td 
                     className="quantity-cell" 
+                    data-label="Количество"
                     onClick={() => handleStartEdit(security.id, security.quantity)}
                     title="Нажмите для изменения"
                   >
@@ -146,19 +153,19 @@ export const SecuritiesTable: React.FC<SecuritiesTableProps> = ({
                       <span className="quantity-value">{security.quantity} шт.</span>
                     )}
                   </td>
-                  <td className="price-cell">
+                  <td className="price-cell" data-label="Текущая цена">
                     {security.currentPrice.toLocaleString('ru-RU', { 
                       minimumFractionDigits: 2, 
                       maximumFractionDigits: 2 
                     })} {currencySymbol}
                   </td>
-                  <td>
+                  <td data-label="Предыдущая цена">
                     {security.previousPrice.toLocaleString('ru-RU', { 
                       minimumFractionDigits: 2, 
                       maximumFractionDigits: 2 
                     })} {currencySymbol}
                   </td>
-                  <td className={`change-cell ${isPositive ? 'positive' : 'negative'}`}>
+                  <td className={`change-cell ${isPositive ? 'positive' : 'negative'}`} data-label="Изменение">
                     <span>
                       {isPositive ? '+' : ''}{priceChange.toLocaleString('ru-RU', { 
                         minimumFractionDigits: 2, 
@@ -169,22 +176,22 @@ export const SecuritiesTable: React.FC<SecuritiesTableProps> = ({
                       ({isPositive ? '+' : ''}{priceChangePercent.toFixed(2)}%)
                     </span>
                   </td>
-                  <td className="total-cell">
+                  <td className="total-cell" data-label="Общая стоимость">
                     {totalValue.toLocaleString('ru-RU', { 
                       minimumFractionDigits: 2, 
                       maximumFractionDigits: 2 
                     })} {currencySymbol}
                   </td>
-                  <td>{security.expectedDividend.toFixed(2)}% год.</td>
-                  <td className="dividend-cell">
+                  <td data-label="Дивидендная доходность">{security.expectedDividend.toFixed(2)}% год.</td>
+                  <td className="dividend-cell" data-label="Ожидаемые дивиденды">
                     {expectedDividend.toLocaleString('ru-RU', { 
                       maximumFractionDigits: 2 
                     })} {currencySymbol} / {getFrequencyLabel(security.dividendFrequency)}
                   </td>
-                  <td>
+                  <td data-label="Действия">
                     <button 
                       className="remove-btn" 
-                      onClick={() => onRemove(security.id)}
+                      onClick={() => handleRemove(security.id, security.name)}
                       title="Удалить"
                     >
                       ×

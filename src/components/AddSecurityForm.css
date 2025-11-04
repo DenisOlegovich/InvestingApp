@@ -52,8 +52,6 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
-  padding-bottom: 16px;
-  border-bottom: 2px solid rgba(79, 172, 254, 0.3);
 }
 
 .modal-header h2 {
@@ -168,17 +166,19 @@
 }
 
 .loaded-data-preview {
-  background: rgba(76, 175, 80, 0.15);
+  background: rgba(76, 175, 80, 0.2);
   padding: 16px;
   border-radius: 8px;
   margin-bottom: 16px;
-  border: 1px solid rgba(76, 175, 80, 0.3);
+  border: 2px solid rgba(76, 175, 80, 0.5);
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.15);
 }
 
 .loaded-data-preview h3 {
   margin: 0 0 12px 0;
   font-size: 16px;
-  color: #81c784;
+  color: #a5d6a7;
+  font-weight: 600;
 }
 
 .preview-grid {
@@ -195,13 +195,14 @@
 
 .preview-label {
   font-size: 12px;
-  color: #666;
+  color: #b0b0b0;
+  font-weight: 500;
 }
 
 .preview-value {
   font-size: 14px;
   font-weight: 600;
-  color: #1a1a1a;
+  color: #e0e0e0;
 }
 
 .preview-value.positive {
@@ -213,6 +214,20 @@
 }
 
 @media (max-width: 640px) {
+  .modal-content {
+    width: 95%;
+    padding: 20px;
+    max-height: 95vh;
+  }
+  
+  .modal-header h2 {
+    font-size: 20px;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  
   .preview-grid {
     grid-template-columns: 1fr;
   }
@@ -222,9 +237,7 @@
   display: flex;
   gap: 12px;
   justify-content: flex-end;
-  margin-top: 8px;
-  padding-top: 16px;
-  border-top: 1px solid #f0f0f0;
+  margin-top: 24px;
 }
 
 .btn-primary,

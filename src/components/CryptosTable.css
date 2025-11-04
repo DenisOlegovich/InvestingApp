@@ -7,17 +7,28 @@
   font-weight: 600;
   color: #e0e0e0;
   margin-bottom: 16px;
-  padding-bottom: 12px;
-  border-bottom: 2px solid rgba(79, 172, 254, 0.3);
 }
 
 .table-wrapper {
-  overflow-x: auto;
   background: rgba(26, 31, 58, 0.6);
   border-radius: 12px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
   animation: fadeIn 0.5s ease-out;
   border: 1px solid rgba(79, 172, 254, 0.2);
+  max-width: 100%;
+}
+
+@media (min-width: 1201px) {
+  .cryptos-table {
+    table-layout: auto;
+    width: 100%;
+    max-width: 100%;
+  }
+  
+  .cryptos-table th,
+  .cryptos-table td {
+    padding: 14px 10px;
+  }
 }
 
 @keyframes fadeIn {
@@ -34,7 +45,6 @@
 .cryptos-table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 1400px;
 }
 
 .cryptos-table thead {
@@ -42,10 +52,17 @@
   color: white;
 }
 
+.cryptos-table thead tr:first-child th:first-child {
+  border-top-left-radius: 12px;
+}
+
+.cryptos-table thead tr:first-child th:last-child {
+  border-top-right-radius: 12px;
+}
+
 /* Заголовок блока криптовалют */
 .table-container:has(.cryptos-table) h2 {
   color: #ef5350;
-  border-bottom-color: rgba(239, 83, 80, 0.5);
 }
 
 .cryptos-table th {
@@ -53,11 +70,12 @@
   text-align: left;
   font-weight: 600;
   font-size: 14px;
-  white-space: nowrap;
+  white-space: normal;
+  word-wrap: break-word;
+  line-height: 1.3;
 }
 
 .cryptos-table tbody tr {
-  border-bottom: 1px solid rgba(79, 172, 254, 0.1);
   transition: all 0.3s ease;
   animation: slideInRight 0.4s ease-out backwards;
 }
@@ -107,11 +125,10 @@
 
 .symbol-badge {
   display: inline-block;
-  background: #fff3e0;
-  color: #f57c00;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
+  background: transparent;
+  color: #ef5350;
+  padding: 0;
+  font-size: 14px;
   font-weight: 600;
 }
 
@@ -220,9 +237,78 @@
   background: #ff1744;
 }
 
-@media (max-width: 1600px) {
+@media (min-width: 769px) and (max-width: 1200px) {
   .table-wrapper {
     overflow-x: auto;
+  }
+  
+  .cryptos-table {
+    min-width: 1200px;
+  }
+}
+
+@media (max-width: 768px) {
+  .table-wrapper {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+  }
+  
+  .cryptos-table thead {
+    display: none;
+  }
+  
+  .cryptos-table,
+  .cryptos-table tbody {
+    display: block;
+    width: 100%;
+  }
+  
+  .cryptos-table tr {
+    display: block;
+    margin-bottom: 16px;
+    background: rgba(15, 23, 41, 0.7);
+    border-radius: 12px;
+    padding: 16px;
+    border: 1px solid rgba(239, 83, 80, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+  
+  .cryptos-table td {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 16px;
+    align-items: center;
+    padding: 12px 0;
+    border: none;
+  }
+  
+  .cryptos-table td:not(:last-child) {
+    border-bottom: 1px solid rgba(239, 83, 80, 0.1);
+  }
+  
+  .cryptos-table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #ef5350;
+    font-size: 14px;
+    text-align: left;
+    white-space: nowrap;
+  }
+  
+  .cryptos-table td > *,
+  .cryptos-table td {
+    text-align: right;
+  }
+  
+  .cryptos-table td:last-child {
+    border: none;
+    padding-top: 16px;
+    justify-content: center;
+  }
+  
+  .cryptos-table td:last-child::before {
+    display: none;
   }
 }
 

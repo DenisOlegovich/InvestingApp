@@ -48,8 +48,7 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
-  padding-bottom: 16px;
-  border-bottom: 2px solid rgba(79, 172, 254, 0.3);
+  
 }
 
 .modal-header h2 {
@@ -156,17 +155,19 @@
 }
 
 .loaded-data-preview {
-  background: #fff3e0;
+  background: rgba(255, 152, 0, 0.2);
   padding: 16px;
   border-radius: 8px;
   margin-bottom: 16px;
-  border: 1px solid #ff9800;
+  border: 2px solid rgba(255, 152, 0, 0.5);
+  box-shadow: 0 4px 12px rgba(255, 152, 0, 0.15);
 }
 
 .loaded-data-preview h3 {
   margin: 0 0 12px 0;
   font-size: 16px;
-  color: #f57c00;
+  color: #ffb74d;
+  font-weight: 600;
 }
 
 .preview-grid {
@@ -183,7 +184,8 @@
 
 .preview-label {
   font-size: 12px;
-  color: #9e9e9e;
+  color: #b0b0b0;
+  font-weight: 500;
 }
 
 .preview-value {
@@ -204,9 +206,7 @@
   display: flex;
   gap: 12px;
   justify-content: flex-end;
-  margin-top: 8px;
-  padding-top: 16px;
-  border-top: 1px solid #f0f0f0;
+  margin-top: 24px;
 }
 
 .btn-primary,

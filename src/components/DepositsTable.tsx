@@ -17,6 +17,12 @@ export const DepositsTable: React.FC<DepositsTableProps> = ({ deposits, onRemove
     return null;
   }
 
+  const handleRemove = (id: string, name: string) => {
+    if (window.confirm(`Вы уверены, что хотите удалить "${name}"?`)) {
+      onRemove(id);
+    }
+  };
+
   const handleStartEdit = (id: string, currentAmount: number) => {
     setEditingId(id);
     setEditValue(currentAmount.toString());
@@ -104,12 +110,12 @@ export const DepositsTable: React.FC<DepositsTableProps> = ({ deposits, onRemove
 
               return (
                 <tr key={deposit.id}>
-                  <td className="name-cell">{deposit.name}</td>
-                  <td>{deposit.bank}</td>
-                  <td>
+                  <td className="name-cell" data-label="Название">{deposit.name}</td>
+                  <td data-label="Банк">{deposit.bank}</td>
+                  <td data-label="Тип">
                     <span className="type-badge">{getTypeLabel(deposit.type)}</span>
                   </td>
-                  <td className="amount-cell editable-cell">
+                  <td className="amount-cell editable-cell" data-label="Сумма депозита">
                     {editingId === deposit.id ? (
                       <div className="edit-wrapper">
                         <input
@@ -151,7 +157,7 @@ export const DepositsTable: React.FC<DepositsTableProps> = ({ deposits, onRemove
                       </div>
                     )}
                   </td>
-                  <td className="value-cell">
+                  <td className="value-cell" data-label="Текущая стоимость">
                     {currentValue.toLocaleString('ru-RU', { 
                       minimumFractionDigits: 2, 
                       maximumFractionDigits: 2 
@@ -165,25 +171,25 @@ export const DepositsTable: React.FC<DepositsTableProps> = ({ deposits, onRemove
                       </span>
                     )}
                   </td>
-                  <td className="rate-cell">{deposit.interestRate.toFixed(2)}% год.</td>
-                  <td>{getCapitalizationLabel(deposit.capitalization)}</td>
-                  <td>{deposit.openingDate ? new Date(deposit.openingDate).toLocaleDateString('ru-RU') : '—'}</td>
-                  <td>
+                  <td className="rate-cell" data-label="Процентная ставка">{deposit.interestRate.toFixed(2)}% год.</td>
+                  <td data-label="Капитализация">{getCapitalizationLabel(deposit.capitalization)}</td>
+                  <td data-label="Дата открытия">{deposit.openingDate ? new Date(deposit.openingDate).toLocaleDateString('ru-RU') : '—'}</td>
+                  <td data-label="Дата окончания">
                     {deposit.maturityDate 
                       ? new Date(deposit.maturityDate).toLocaleDateString('ru-RU')
                       : '—'
                     }
                   </td>
-                  <td className="income-cell">
+                  <td className="income-cell" data-label="Месячный доход">
                     {monthlyIncome.toLocaleString('ru-RU', { 
                       minimumFractionDigits: 2, 
                       maximumFractionDigits: 2 
                     })} {currencySymbol}
                   </td>
-                  <td>
+                  <td data-label="Действия">
                     <button 
                       className="remove-btn" 
-                      onClick={() => onRemove(deposit.id)}
+                      onClick={() => handleRemove(deposit.id, deposit.name)}
                       title="Удалить"
                     >
                       ×

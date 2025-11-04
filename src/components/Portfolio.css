@@ -15,6 +15,7 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
+  gap: 24px;
 }
 
 .portfolio-header h1 {
@@ -255,6 +256,12 @@
   .portfolio {
     padding: 16px;
   }
+  
+  .header-top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
 
   .portfolio-header h1 {
     font-size: 24px;
@@ -266,6 +273,28 @@
 
   .portfolio-stats {
     grid-template-columns: 1fr;
+  }
+  
+  .portfolio-actions {
+    flex-direction: column;
+  }
+  
+  .add-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .portfolio {
+    padding: 12px;
+  }
+  
+  .portfolio-header h1 {
+    font-size: 20px;
+  }
+  
+  .stat-value {
+    font-size: 24px;
   }
 }
 

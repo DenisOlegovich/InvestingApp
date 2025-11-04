@@ -17,6 +17,12 @@ export const RealEstateTable: React.FC<RealEstateTableProps> = ({ realEstate, on
     return null;
   }
 
+  const handleRemove = (id: string, name: string) => {
+    if (window.confirm(`Вы уверены, что хотите удалить "${name}"?`)) {
+      onRemove(id);
+    }
+  };
+
   const handleStartEdit = (id: string, currentValue: number) => {
     setEditingId(id);
     setEditValue(currentValue.toString());
@@ -86,12 +92,12 @@ export const RealEstateTable: React.FC<RealEstateTableProps> = ({ realEstate, on
 
               return (
                 <tr key={property.id}>
-                  <td className="name-cell">{property.name}</td>
-                  <td className="location-cell">{property.location}</td>
-                  <td>
+                  <td className="name-cell" data-label="Название">{property.name}</td>
+                  <td className="location-cell" data-label="Местоположение">{property.location}</td>
+                  <td data-label="Тип">
                     <span className="type-badge">{getTypeLabel(property.type)}</span>
                   </td>
-                  <td className="price-cell editable-cell">
+                  <td className="price-cell editable-cell" data-label="Текущая стоимость">
                     {editingId === property.id ? (
                       <div className="edit-wrapper">
                         <input
@@ -130,13 +136,13 @@ export const RealEstateTable: React.FC<RealEstateTableProps> = ({ realEstate, on
                       </div>
                     )}
                   </td>
-                  <td>
+                  <td data-label="Цена покупки">
                     {property.purchasePrice ? `${property.purchasePrice.toLocaleString('ru-RU')} ₽` : '—'}
                   </td>
-                  <td>
+                  <td data-label="Дата покупки">
                     {property.purchaseDate ? new Date(property.purchaseDate).toLocaleDateString('ru-RU') : '—'}
                   </td>
-                  <td className={`gain-cell ${isGainPositive ? 'positive' : 'negative'}`}>
+                  <td className={`gain-cell ${isGainPositive ? 'positive' : 'negative'}`} data-label="Прирост стоимости">
                     {property.purchasePrice ? (
                       <>
                         <span>
@@ -148,10 +154,10 @@ export const RealEstateTable: React.FC<RealEstateTableProps> = ({ realEstate, on
                       </>
                     ) : '—'}
                   </td>
-                  <td className="rental-cell">
+                  <td className="rental-cell" data-label="Ожидаемая аренда (год)">
                     {expectedRental > 0 ? `${expectedRental.toLocaleString('ru-RU')} ₽` : '—'}
                   </td>
-                  <td className="yield-cell">
+                  <td className="yield-cell" data-label="Доходность">
                     {rentalYield > 0 ? `${rentalYield.toFixed(2)}% год.` : '—'}
                     {property.monthlyRent && (
                       <small style={{ display: 'block', color: '#4caf50' }}>
@@ -159,10 +165,10 @@ export const RealEstateTable: React.FC<RealEstateTableProps> = ({ realEstate, on
                       </small>
                     )}
                   </td>
-                  <td>
+                  <td data-label="Действия">
                     <button 
                       className="remove-btn" 
-                      onClick={() => onRemove(property.id)}
+                      onClick={() => handleRemove(property.id, property.name)}
                       title="Удалить"
                     >
                       ×

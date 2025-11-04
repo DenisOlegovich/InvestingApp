@@ -44,7 +44,6 @@ export const Portfolio: React.FC<PortfolioProps> = ({
   const [showAddCrypto, setShowAddCrypto] = useState(false);
   const [updatingPrices, setUpdatingPrices] = useState(false);
   const [updatingCryptoPrices, setUpdatingCryptoPrices] = useState(false);
-  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const [exchangeRates, setExchangeRates] = useState<ExchangeRates | null>(null);
   const hasInitialLoad = useRef(false);
 
@@ -377,7 +376,6 @@ export const Portfolio: React.FC<PortfolioProps> = ({
         cryptocurrencies: updatedCryptos,
       });
 
-      setLastUpdate(new Date());
     } catch (error) {
       console.error("Ошибка при обновлении цен:", error);
     } finally {
@@ -457,12 +455,6 @@ export const Portfolio: React.FC<PortfolioProps> = ({
           + Добавить криптовалюту
         </button>
       </div>
-
-      {lastUpdate && (
-        <div className='last-update-info'>
-          Последнее обновление: {lastUpdate.toLocaleTimeString("ru-RU")}
-        </div>
-      )}
 
       {portfolio.securities.length > 0 && (
         <SecuritiesTable
