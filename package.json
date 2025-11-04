@@ -2,6 +2,7 @@
   "name": "investor-portfolio",
   "version": "1.0.0",
   "description": "Сайт для управления инвестиционным портфелем",
+  "license": "MIT",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
