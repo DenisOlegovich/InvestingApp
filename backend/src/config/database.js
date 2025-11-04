@@ -80,7 +80,7 @@ export function initDatabase() {
       amount REAL NOT NULL,
       interest_rate REAL NOT NULL,
       currency TEXT NOT NULL CHECK(currency IN ('RUB', 'USD', 'EUR')),
-      opening_date TEXT NOT NULL,
+      opening_date TEXT,
       maturity_date TEXT,
       capitalization TEXT NOT NULL CHECK(capitalization IN ('monthly', 'quarterly', 'yearly', 'none')),
       type TEXT NOT NULL CHECK(type IN ('demand', 'term')),

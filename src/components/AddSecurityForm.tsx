@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Security } from '../types';
 import { fetchStockData } from '../services/stockApi';
+import { formatNumberWithSpaces, parseFormattedNumber } from '../utils/formatNumber';
 import './AddSecurityForm.css';
 
 interface AddSecurityFormProps {
@@ -74,7 +75,7 @@ export const AddSecurityForm: React.FC<AddSecurityFormProps> = ({ onAdd, onClose
       type: formData.type,
       currentPrice: loadedData.currentPrice,
       previousPrice: loadedData.previousPrice, // При добавлении previousPrice = previousClose из API
-      quantity: parseInt(formData.quantity),
+      quantity: parseInt(parseFormattedNumber(formData.quantity)),
       expectedDividend: loadedData.expectedDividend,
       dividendFrequency: loadedData.dividendFrequency,
       currency: loadedData.currency,
@@ -171,12 +172,10 @@ export const AddSecurityForm: React.FC<AddSecurityFormProps> = ({ onAdd, onClose
           <div className="form-group">
             <label>Количество *</label>
             <input
-              type="number"
+              type="text"
               value={formData.quantity}
-              onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
+              onChange={(e) => setFormData({ ...formData, quantity: formatNumberWithSpaces(e.target.value) })}
               required
-              min="1"
-              placeholder="Введите количество"
               disabled={loading || !loadedData}
             />
           </div>

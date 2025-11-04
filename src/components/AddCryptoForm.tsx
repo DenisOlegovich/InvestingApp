@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Crypto } from '../types';
 import { fetchCryptoData } from '../services/cryptoApi';
+import { formatNumberWithSpaces, parseFormattedNumber } from '../utils/formatNumber';
 import './AddCryptoForm.css';
 
 interface AddCryptoFormProps {
@@ -59,7 +60,7 @@ export const AddCryptoForm: React.FC<AddCryptoFormProps> = ({ onAdd, onClose }) 
       return;
     }
 
-    if (!formData.amount || parseFloat(formData.amount) <= 0) {
+    if (!formData.amount || parseFloat(parseFormattedNumber(formData.amount)) <= 0) {
       setError('Укажите количество (больше 0)');
       return;
     }
@@ -67,11 +68,11 @@ export const AddCryptoForm: React.FC<AddCryptoFormProps> = ({ onAdd, onClose }) 
     onAdd({
       symbol: formData.symbol.toUpperCase().trim(),
       name: loadedData.name,
-      amount: parseFloat(formData.amount),
+      amount: parseFloat(parseFormattedNumber(formData.amount)),
       currentPrice: loadedData.currentPrice,
       previousPrice: loadedData.previousPrice,
-      stakingYield: formData.stakingYield ? parseFloat(formData.stakingYield) : undefined,
-      purchasePrice: formData.purchasePrice ? parseFloat(formData.purchasePrice) : undefined,
+      stakingYield: formData.stakingYield ? parseFloat(parseFormattedNumber(formData.stakingYield)) : undefined,
+      purchasePrice: formData.purchasePrice ? parseFloat(parseFormattedNumber(formData.purchasePrice)) : undefined,
       purchaseDate: formData.purchaseDate || undefined,
     });
     onClose();
@@ -147,13 +148,10 @@ export const AddCryptoForm: React.FC<AddCryptoFormProps> = ({ onAdd, onClose }) 
           <div className="form-group">
             <label>Количество *</label>
             <input
-              type="number"
-              step="0.00000001"
+              type="text"
               value={formData.amount}
-              onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+              onChange={(e) => setFormData({ ...formData, amount: formatNumberWithSpaces(e.target.value) })}
               required
-              min="0.00000001"
-              placeholder="Введите количество монет"
               disabled={loading || !loadedData}
             />
           </div>
@@ -176,12 +174,9 @@ export const AddCryptoForm: React.FC<AddCryptoFormProps> = ({ onAdd, onClose }) 
             <div className="form-group">
               <label>Цена покупки ($)</label>
               <input
-                type="number"
-                step="0.01"
+                type="text"
                 value={formData.purchasePrice}
-                onChange={(e) => setFormData({ ...formData, purchasePrice: e.target.value })}
-                placeholder="Опционально"
-                min="0"
+                onChange={(e) => setFormData({ ...formData, purchasePrice: formatNumberWithSpaces(e.target.value) })}
                 disabled={loading || !loadedData}
               />
             </div>

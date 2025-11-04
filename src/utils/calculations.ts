@@ -73,6 +73,11 @@ export function calculateDepositMonthlyIncome(deposit: Deposit): number {
 }
 
 export function calculateDepositCurrentValue(deposit: Deposit): number {
+  // Если дата открытия не указана, возвращаем исходную сумму
+  if (!deposit.openingDate) {
+    return deposit.amount;
+  }
+
   // Рассчитываем текущую стоимость депозита с учетом капитализации
   const openingDate = new Date(deposit.openingDate);
   const now = new Date();

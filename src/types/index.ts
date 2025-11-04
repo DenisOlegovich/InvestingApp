@@ -30,7 +30,7 @@ export interface Deposit {
   amount: number; // Сумма депозита
   interestRate: number; // Процентная ставка годовых
   currency: 'RUB' | 'USD' | 'EUR';
-  openingDate: string; // Дата открытия
+  openingDate?: string; // Дата открытия (опционально)
   maturityDate?: string; // Дата окончания (опционально, для срочных депозитов)
   capitalization: 'monthly' | 'quarterly' | 'yearly' | 'none'; // Капитализация процентов
   type: 'demand' | 'term'; // До востребования или срочный

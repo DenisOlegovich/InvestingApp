@@ -47,18 +47,14 @@ export const PieChart: React.FC<PieChartProps> = ({
   });
 
   // Функция для создания пути SVG сегмента
-  const createArc = (startAngle: number, endAngle: number, isFullCircle: boolean): string => {
+  const createArc = (startAngle: number, endAngle: number): string => {
     const centerX = 100;
     const centerY = 100;
     const radius = 80;
 
-    // Если это полный круг (или почти полный), рисуем circle вместо arc
-    if (isFullCircle || (endAngle - startAngle) >= 359.9) {
-      return ''; // Вернем пустую строку, будем использовать <circle> элемент
-    }
-
-    const startRad = (startAngle - 90) * (Math.PI / 180);
-    const endRad = (endAngle - 90) * (Math.PI / 180);
+    // Корректируем углы: вычитаем 90 чтобы начинать сверху
+    const startRad = ((startAngle - 90) * Math.PI) / 180;
+    const endRad = ((endAngle - 90) * Math.PI) / 180;
 
     const x1 = centerX + radius * Math.cos(startRad);
     const y1 = centerY + radius * Math.sin(startRad);
@@ -71,6 +67,20 @@ export const PieChart: React.FC<PieChartProps> = ({
   };
 
   const isFullCircle = segments.length === 1 && segments[0].percentage >= 99.9;
+
+  // Логирование для отладки
+  console.log('PieChart:', title, {
+    segmentsCount: segments.length,
+    segments: segments.map(s => ({
+      label: s.label,
+      value: s.value,
+      percentage: s.percentage,
+      startAngle: s.startAngle,
+      endAngle: s.endAngle
+    })),
+    isFullCircle,
+    total
+  });
 
   return (
     <div className="pie-chart-container">
@@ -89,7 +99,7 @@ export const PieChart: React.FC<PieChartProps> = ({
           ) : (
             // Для нескольких сегментов используем path
             segments.map((segment, index) => {
-              const arcPath = createArc(segment.startAngle, segment.endAngle, false);
+              const arcPath = createArc(segment.startAngle, segment.endAngle);
               return (
                 <g key={index}>
                   <path

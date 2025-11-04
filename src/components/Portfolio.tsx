@@ -383,7 +383,10 @@ export const Portfolio: React.FC<PortfolioProps> = ({
           <div className='stat-card stat-card-portfolio'>
             <div className='stat-label'>Общая стоимость портфеля</div>
             <div className='stat-value'>
-              {totalValue.toLocaleString("ru-RU")} ₽
+              {totalValue.toLocaleString("ru-RU", { 
+                minimumFractionDigits: 2, 
+                maximumFractionDigits: 2 
+              })} ₽
             </div>
           </div>
           <div className='stat-card stat-card-income'>

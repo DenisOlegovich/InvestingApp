@@ -105,7 +105,7 @@ export const PortfolioCharts: React.FC<PortfolioChartsProps> = ({ portfolio, exc
     {
       label: 'Криптовалюты',
       value: cryptosValueRub,
-      color: '#e91e63',
+      color: '#ef5350',
     },
   ].filter(item => item.value > 0);
 
@@ -129,7 +129,7 @@ export const PortfolioCharts: React.FC<PortfolioChartsProps> = ({ portfolio, exc
     {
       label: 'Стейкинг крипты',
       value: cryptosIncomeRub,
-      color: '#e91e63',
+      color: '#ef5350',
     },
   ].filter(item => item.value > 0);
 

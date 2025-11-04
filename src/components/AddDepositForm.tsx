@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Deposit } from '../types';
+import { formatNumberWithSpaces, parseFormattedNumber } from '../utils/formatNumber';
 import './AddDepositForm.css';
 
 interface AddDepositFormProps {
@@ -14,7 +15,7 @@ export const AddDepositForm: React.FC<AddDepositFormProps> = ({ onAdd, onClose }
     amount: '',
     interestRate: '',
     currency: 'RUB' as 'RUB' | 'USD' | 'EUR',
-    openingDate: new Date().toISOString().split('T')[0],
+    openingDate: '',
     maturityDate: '',
     capitalization: 'monthly' as 'monthly' | 'quarterly' | 'yearly' | 'none',
     type: 'term' as 'demand' | 'term',
@@ -25,10 +26,10 @@ export const AddDepositForm: React.FC<AddDepositFormProps> = ({ onAdd, onClose }
     onAdd({
       name: formData.name,
       bank: formData.bank,
-      amount: parseFloat(formData.amount),
-      interestRate: parseFloat(formData.interestRate),
+      amount: parseFloat(parseFormattedNumber(formData.amount)),
+      interestRate: parseFloat(parseFormattedNumber(formData.interestRate)),
       currency: formData.currency,
-      openingDate: formData.openingDate,
+      openingDate: formData.openingDate || undefined,
       maturityDate: formData.maturityDate || undefined,
       capitalization: formData.capitalization,
       type: formData.type,
@@ -71,12 +72,10 @@ export const AddDepositForm: React.FC<AddDepositFormProps> = ({ onAdd, onClose }
             <div className="form-group">
               <label>Сумма депозита *</label>
               <input
-                type="number"
-                step="0.01"
+                type="text"
                 value={formData.amount}
-                onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                onChange={(e) => setFormData({ ...formData, amount: formatNumberWithSpaces(e.target.value) })}
                 required
-                min="0"
               />
             </div>
             
@@ -134,12 +133,11 @@ export const AddDepositForm: React.FC<AddDepositFormProps> = ({ onAdd, onClose }
             </div>
             
             <div className="form-group">
-              <label>Дата открытия *</label>
+              <label>Дата открытия <small>(опционально)</small></label>
               <input
                 type="date"
                 value={formData.openingDate}
                 onChange={(e) => setFormData({ ...formData, openingDate: e.target.value })}
-                required
               />
             </div>
           </div>

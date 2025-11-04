@@ -100,7 +100,7 @@ export const DepositsTable: React.FC<DepositsTableProps> = ({ deposits, onRemove
                   </td>
                   <td className="rate-cell">{deposit.interestRate.toFixed(2)}% год.</td>
                   <td>{getCapitalizationLabel(deposit.capitalization)}</td>
-                  <td>{new Date(deposit.openingDate).toLocaleDateString('ru-RU')}</td>
+                  <td>{deposit.openingDate ? new Date(deposit.openingDate).toLocaleDateString('ru-RU') : '—'}</td>
                   <td>
                     {deposit.maturityDate 
                       ? new Date(deposit.maturityDate).toLocaleDateString('ru-RU')

@@ -47,7 +47,7 @@ export const RealEstateTable: React.FC<RealEstateTableProps> = ({ realEstate, on
                   case 'house':
                     return 'Дом';
                   case 'commercial':
-                    return 'Коммерческая';
+                    return 'Коммерческая недвижимость';
                   default:
                     return type;
                 }
