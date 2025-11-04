@@ -52,7 +52,7 @@ export const CryptosTable: React.FC<CryptosTableProps> = ({
 
   return (
     <div className="table-container">
-      <h2>Криптовалюты ({cryptocurrencies.length})</h2>
+      <h2>Криптовалюты</h2>
       <div className="table-wrapper">
         <table className="cryptos-table">
           <thead>

@@ -128,6 +128,13 @@ export const portfolioAPI = {
     });
   },
 
+  updateRealEstate: async (id: string, updates: any) => {
+    return fetchWithAuth(`/portfolio/real-estate/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(updates),
+    });
+  },
+
   deleteRealEstate: async (id: string) => {
     return fetchWithAuth(`/portfolio/real-estate/${id}`, {
       method: 'DELETE',
@@ -139,6 +146,13 @@ export const portfolioAPI = {
     return fetchWithAuth('/portfolio/deposits', {
       method: 'POST',
       body: JSON.stringify(deposit),
+    });
+  },
+
+  updateDeposit: async (id: string, updates: any) => {
+    return fetchWithAuth(`/portfolio/deposits/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(updates),
     });
   },
 

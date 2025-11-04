@@ -10,7 +10,8 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  color: #1a1a1a;
+  color: #e0e0e0;
+  background-color: #0a0e1a;
   overflow-x: hidden;
 }
 
@@ -22,7 +23,7 @@ body {
 .app {
   min-height: 100vh;
   position: relative;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #0a0e1a 0%, #1a1f3a 50%, #0f1729 100%);
   background-attachment: fixed;
 }
 
@@ -35,9 +36,9 @@ body {
   width: 100%;
   height: 100%;
   background-image: 
-    radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 40% 20%, rgba(255, 152, 0, 0.1) 0%, transparent 50%);
+    radial-gradient(circle at 20% 50%, rgba(79, 172, 254, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(138, 180, 248, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 40% 20%, rgba(76, 175, 80, 0.06) 0%, transparent 50%);
   animation: backgroundMove 20s ease-in-out infinite alternate;
   pointer-events: none;
   z-index: 0;
@@ -58,7 +59,7 @@ body {
   position: fixed;
   width: 300px;
   height: 300px;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(79, 172, 254, 0.1) 0%, transparent 70%);
   border-radius: 50%;
   top: -150px;
   right: -150px;

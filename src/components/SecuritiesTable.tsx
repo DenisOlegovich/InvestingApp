@@ -52,7 +52,7 @@ export const SecuritiesTable: React.FC<SecuritiesTableProps> = ({
 
   return (
     <div className="table-container">
-      <h2>Ценные бумаги ({securities.length})</h2>
+      <h2>Ценные бумаги</h2>
       <div className="table-wrapper">
         <table className="securities-table">
           <thead>

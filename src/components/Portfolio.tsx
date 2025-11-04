@@ -118,6 +118,27 @@ export const Portfolio: React.FC<PortfolioProps> = ({
     }
   };
 
+  const handleUpdateRealEstateValue = async (id: string, newValue: number) => {
+    const realEstate = portfolio.realEstate.find(r => r.id === id);
+    if (!realEstate) return;
+
+    try {
+      await portfolioAPI.updateRealEstate(id, {
+        currentValue: newValue,
+      });
+      
+      onUpdatePortfolio({
+        ...portfolio,
+        realEstate: portfolio.realEstate.map((r) =>
+          r.id === id ? { ...r, currentValue: newValue } : r
+        ),
+      });
+    } catch (error) {
+      console.error('Ошибка обновления стоимости недвижимости:', error);
+      alert('Ошибка при обновлении стоимости');
+    }
+  };
+
   const handleRemoveRealEstate = async (id: string) => {
     try {
       await portfolioAPI.deleteRealEstate(id);
@@ -145,6 +166,27 @@ export const Portfolio: React.FC<PortfolioProps> = ({
     } catch (error) {
       console.error('Ошибка добавления депозита:', error);
       alert('Ошибка при добавлении депозита');
+    }
+  };
+
+  const handleUpdateDepositAmount = async (id: string, newAmount: number) => {
+    const deposit = (portfolio.deposits || []).find(d => d.id === id);
+    if (!deposit) return;
+
+    try {
+      await portfolioAPI.updateDeposit(id, {
+        amount: newAmount,
+      });
+      
+      onUpdatePortfolio({
+        ...portfolio,
+        deposits: (portfolio.deposits || []).map((d) =>
+          d.id === id ? { ...d, amount: newAmount } : d
+        ),
+      });
+    } catch (error) {
+      console.error('Ошибка обновления суммы депозита:', error);
+      alert('Ошибка при обновлении суммы');
     }
   };
 
@@ -414,18 +456,6 @@ export const Portfolio: React.FC<PortfolioProps> = ({
         <button className='add-btn' onClick={() => setShowAddCrypto(true)}>
           + Добавить криптовалюту
         </button>
-        {(portfolio.securities.length > 0 ||
-          (portfolio.cryptocurrencies &&
-            portfolio.cryptocurrencies.length > 0)) && (
-          <button
-            className='add-btn update-btn'
-            onClick={updateAllPricesUnified}
-            disabled={updatingPrices || updatingCryptoPrices}>
-            {updatingPrices || updatingCryptoPrices
-              ? "⏳ Обновление..."
-              : "🔄 Обновить все цены"}
-          </button>
-        )}
       </div>
 
       {lastUpdate && (
@@ -447,6 +477,7 @@ export const Portfolio: React.FC<PortfolioProps> = ({
         <RealEstateTable
           realEstate={portfolio.realEstate}
           onRemove={handleRemoveRealEstate}
+          onUpdateValue={handleUpdateRealEstateValue}
         />
       )}
 
@@ -454,6 +485,7 @@ export const Portfolio: React.FC<PortfolioProps> = ({
         <DepositsTable
           deposits={portfolio.deposits}
           onRemove={handleRemoveDeposit}
+          onUpdateAmount={handleUpdateDepositAmount}
         />
       )}
 

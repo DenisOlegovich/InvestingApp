@@ -5,8 +5,10 @@ import {
   updateSecurity,
   deleteSecurity,
   addRealEstate,
+  updateRealEstate,
   deleteRealEstate,
   addDeposit,
+  updateDeposit,
   deleteDeposit,
   addCryptocurrency,
   updateCryptocurrency,
@@ -29,10 +31,12 @@ router.delete('/securities/:id', deleteSecurity);
 
 // Недвижимость
 router.post('/real-estate', addRealEstate);
+router.put('/real-estate/:id', updateRealEstate);
 router.delete('/real-estate/:id', deleteRealEstate);
 
 // Депозиты
 router.post('/deposits', addDeposit);
+router.put('/deposits/:id', updateDeposit);
 router.delete('/deposits/:id', deleteDeposit);
 
 // Криптовалюты

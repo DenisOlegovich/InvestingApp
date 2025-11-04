@@ -2,21 +2,32 @@
   margin-bottom: 32px;
 }
 
+/* Заголовок блока депозитов */
+.table-container:has(.deposits-table) h2 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #ff9800;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid rgba(255, 152, 0, 0.5);
+}
+
 .table-container h2 {
   font-size: 24px;
   font-weight: 600;
-  color: #1a1a1a;
+  color: #e0e0e0;
   margin-bottom: 16px;
   padding-bottom: 12px;
-  border-bottom: 2px solid #e0e0e0;
+  border-bottom: 2px solid rgba(79, 172, 254, 0.3);
 }
 
 .table-wrapper {
   overflow-x: auto;
-  background: white;
+  background: rgba(26, 31, 58, 0.6);
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
   animation: fadeIn 0.5s ease-out;
+  border: 1px solid rgba(79, 172, 254, 0.2);
 }
 
 @keyframes fadeIn {
@@ -50,7 +61,7 @@
 }
 
 .deposits-table tbody tr {
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid rgba(79, 172, 254, 0.1);
   transition: all 0.3s ease;
   animation: slideInRight 0.4s ease-out backwards;
 }
@@ -73,15 +84,15 @@
 }
 
 .deposits-table tbody tr:hover {
-  background-color: #f9f9f9;
+  background-color: rgba(79, 172, 254, 0.08);
   transform: scale(1.01);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 8px rgba(79, 172, 254, 0.15);
 }
 
 .deposits-table td {
   padding: 14px 12px;
   font-size: 14px;
-  color: #1a1a1a;
+  color: #e0e0e0;
 }
 
 .name-cell {
@@ -150,6 +161,83 @@
 
 .remove-btn:hover {
   background: #ff1744;
+}
+
+/* Editable cells */
+.editable-cell {
+  position: relative;
+}
+
+.editable-value {
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.editable-value:hover {
+  background: #fff3e0;
+}
+
+.edit-icon {
+  opacity: 0;
+  font-size: 12px;
+  color: #ff9800;
+  transition: opacity 0.2s;
+}
+
+.editable-value:hover .edit-icon {
+  opacity: 1;
+}
+
+.edit-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.edit-input {
+  width: 120px;
+  padding: 4px 8px;
+  border: 2px solid #ff9800;
+  border-radius: 4px;
+  font-size: 14px;
+  outline: none;
+}
+
+.save-btn,
+.cancel-btn {
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.save-btn {
+  background: #4caf50;
+  color: white;
+}
+
+.save-btn:hover {
+  background: #45a049;
+}
+
+.cancel-btn {
+  background: #f44336;
+  color: white;
+}
+
+.cancel-btn:hover {
+  background: #d32f2f;
 }
 
 @media (max-width: 1600px) {

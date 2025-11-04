@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Deposit } from '../types';
 import { calculateDepositMonthlyIncome, calculateDepositCurrentValue } from '../utils/calculations';
 import './DepositsTable.css';
@@ -6,12 +6,43 @@ import './DepositsTable.css';
 interface DepositsTableProps {
   deposits: Deposit[];
   onRemove: (id: string) => void;
+  onUpdateAmount: (id: string, newAmount: number) => void;
 }
 
-export const DepositsTable: React.FC<DepositsTableProps> = ({ deposits, onRemove }) => {
+export const DepositsTable: React.FC<DepositsTableProps> = ({ deposits, onRemove, onUpdateAmount }) => {
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState<string>('');
+
   if (deposits.length === 0) {
     return null;
   }
+
+  const handleStartEdit = (id: string, currentAmount: number) => {
+    setEditingId(id);
+    setEditValue(currentAmount.toString());
+  };
+
+  const handleSaveEdit = (id: string) => {
+    const newAmount = parseFloat(editValue);
+    if (newAmount && newAmount > 0) {
+      onUpdateAmount(id, newAmount);
+    }
+    setEditingId(null);
+    setEditValue('');
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setEditValue('');
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent, id: string) => {
+    if (e.key === 'Enter') {
+      handleSaveEdit(id);
+    } else if (e.key === 'Escape') {
+      handleCancelEdit();
+    }
+  };
 
   const getCurrencySymbol = (currency: string) => {
     switch (currency) {
@@ -46,7 +77,7 @@ export const DepositsTable: React.FC<DepositsTableProps> = ({ deposits, onRemove
 
   return (
     <div className="table-container">
-      <h2>Депозиты ({deposits.length})</h2>
+      <h2>Депозиты</h2>
       <div className="table-wrapper">
         <table className="deposits-table">
           <thead>
@@ -78,11 +109,47 @@ export const DepositsTable: React.FC<DepositsTableProps> = ({ deposits, onRemove
                   <td>
                     <span className="type-badge">{getTypeLabel(deposit.type)}</span>
                   </td>
-                  <td className="amount-cell">
-                    {deposit.amount.toLocaleString('ru-RU', { 
-                      minimumFractionDigits: 2, 
-                      maximumFractionDigits: 2 
-                    })} {currencySymbol}
+                  <td className="amount-cell editable-cell">
+                    {editingId === deposit.id ? (
+                      <div className="edit-wrapper">
+                        <input
+                          type="number"
+                          value={editValue}
+                          onChange={(e) => setEditValue(e.target.value)}
+                          onKeyDown={(e) => handleKeyPress(e, deposit.id)}
+                          className="edit-input"
+                          autoFocus
+                          min="0"
+                          step="1000"
+                        />
+                        <button 
+                          className="save-btn" 
+                          onClick={() => handleSaveEdit(deposit.id)}
+                          title="Сохранить"
+                        >
+                          ✓
+                        </button>
+                        <button 
+                          className="cancel-btn" 
+                          onClick={handleCancelEdit}
+                          title="Отмена"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ) : (
+                      <div 
+                        className="editable-value"
+                        onClick={() => handleStartEdit(deposit.id, deposit.amount)}
+                        title="Нажмите для редактирования"
+                      >
+                        {deposit.amount.toLocaleString('ru-RU', { 
+                          minimumFractionDigits: 2, 
+                          maximumFractionDigits: 2 
+                        })} {currencySymbol}
+                        <span className="edit-icon">✎</span>
+                      </div>
+                    )}
                   </td>
                   <td className="value-cell">
                     {currentValue.toLocaleString('ru-RU', { 

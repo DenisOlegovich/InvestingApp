@@ -5,18 +5,19 @@
 .table-container h2 {
   font-size: 24px;
   font-weight: 600;
-  color: #1a1a1a;
+  color: #e0e0e0;
   margin-bottom: 16px;
   padding-bottom: 12px;
-  border-bottom: 2px solid #e0e0e0;
+  border-bottom: 2px solid rgba(79, 172, 254, 0.3);
 }
 
 .table-wrapper {
   overflow-x: auto;
-  background: white;
+  background: rgba(26, 31, 58, 0.6);
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
   animation: fadeIn 0.5s ease-out;
+  border: 1px solid rgba(79, 172, 254, 0.2);
 }
 
 @keyframes fadeIn {
@@ -43,8 +44,8 @@
 
 /* Заголовок блока криптовалют */
 .table-container:has(.cryptos-table) h2 {
-  color: #1a1a1a;
-  border-bottom-color: #e0e0e0;
+  color: #ef5350;
+  border-bottom-color: rgba(239, 83, 80, 0.5);
 }
 
 .cryptos-table th {
@@ -56,7 +57,7 @@
 }
 
 .cryptos-table tbody tr {
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid rgba(79, 172, 254, 0.1);
   transition: all 0.3s ease;
   animation: slideInRight 0.4s ease-out backwards;
 }
@@ -79,9 +80,9 @@
 }
 
 .cryptos-table tbody tr:hover {
-  background-color: #f9f9f9;
+  background-color: rgba(79, 172, 254, 0.08);
   transform: scale(1.01);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 8px rgba(79, 172, 254, 0.15);
 }
 
 .cryptos-table tbody tr.updating {
@@ -92,7 +93,7 @@
 .cryptos-table td {
   padding: 14px 12px;
   font-size: 14px;
-  color: #1a1a1a;
+  color: #e0e0e0;
 }
 
 .name-cell {

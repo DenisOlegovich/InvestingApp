@@ -61,6 +61,16 @@ export const addRealEstate = (req, res) => {
   }
 };
 
+export const updateRealEstate = (req, res) => {
+  try {
+    Portfolio.updateRealEstate(req.params.id, req.user.id, req.body);
+    res.json({ message: 'Недвижимость обновлена' });
+  } catch (error) {
+    console.error('Ошибка обновления недвижимости:', error);
+    res.status(500).json({ error: 'Ошибка при обновлении недвижимости' });
+  }
+};
+
 export const deleteRealEstate = (req, res) => {
   try {
     Portfolio.deleteRealEstate(req.params.id, req.user.id);
@@ -82,6 +92,16 @@ export const addDeposit = (req, res) => {
   } catch (error) {
     console.error('Ошибка добавления депозита:', error);
     res.status(500).json({ error: 'Ошибка при добавлении депозита' });
+  }
+};
+
+export const updateDeposit = (req, res) => {
+  try {
+    Portfolio.updateDeposit(req.params.id, req.user.id, req.body);
+    res.json({ message: 'Депозит обновлен' });
+  } catch (error) {
+    console.error('Ошибка обновления депозита:', error);
+    res.status(500).json({ error: 'Ошибка при обновлении депозита' });
   }
 };
 

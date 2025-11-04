@@ -118,6 +118,25 @@ class Portfolio {
     return result.lastInsertRowid;
   }
 
+  static updateRealEstate(id, userId, updates) {
+    const fields = [];
+    const values = [];
+
+    if (updates.currentValue !== undefined) {
+      fields.push('current_value = ?');
+      values.push(updates.currentValue);
+    }
+
+    if (fields.length === 0) {
+      throw new Error('Нет полей для обновления');
+    }
+
+    values.push(id, userId);
+    const sql = `UPDATE real_estate SET ${fields.join(', ')} WHERE id = ? AND user_id = ?`;
+    const stmt = db.prepare(sql);
+    return stmt.run(...values);
+  }
+
   static deleteRealEstate(id, userId) {
     const stmt = db.prepare('DELETE FROM real_estate WHERE id = ? AND user_id = ?');
     return stmt.run(id, userId);
@@ -139,6 +158,25 @@ class Portfolio {
     );
     
     return result.lastInsertRowid;
+  }
+
+  static updateDeposit(id, userId, updates) {
+    const fields = [];
+    const values = [];
+
+    if (updates.amount !== undefined) {
+      fields.push('amount = ?');
+      values.push(updates.amount);
+    }
+
+    if (fields.length === 0) {
+      throw new Error('Нет полей для обновления');
+    }
+
+    values.push(id, userId);
+    const sql = `UPDATE deposits SET ${fields.join(', ')} WHERE id = ? AND user_id = ?`;
+    const stmt = db.prepare(sql);
+    return stmt.run(...values);
   }
 
   static deleteDeposit(id, userId) {

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { RealEstate } from '../types';
 import { calculatePriceChangePercent, calculateRealEstateRental, calculateRentalYield } from '../utils/calculations';
 import './RealEstateTable.css';
@@ -6,16 +6,47 @@ import './RealEstateTable.css';
 interface RealEstateTableProps {
   realEstate: RealEstate[];
   onRemove: (id: string) => void;
+  onUpdateValue: (id: string, newValue: number) => void;
 }
 
-export const RealEstateTable: React.FC<RealEstateTableProps> = ({ realEstate, onRemove }) => {
+export const RealEstateTable: React.FC<RealEstateTableProps> = ({ realEstate, onRemove, onUpdateValue }) => {
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState<string>('');
+
   if (realEstate.length === 0) {
     return null;
   }
 
+  const handleStartEdit = (id: string, currentValue: number) => {
+    setEditingId(id);
+    setEditValue(currentValue.toString());
+  };
+
+  const handleSaveEdit = (id: string) => {
+    const newValue = parseFloat(editValue);
+    if (newValue && newValue > 0) {
+      onUpdateValue(id, newValue);
+    }
+    setEditingId(null);
+    setEditValue('');
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setEditValue('');
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent, id: string) => {
+    if (e.key === 'Enter') {
+      handleSaveEdit(id);
+    } else if (e.key === 'Escape') {
+      handleCancelEdit();
+    }
+  };
+
   return (
     <div className="table-container">
-      <h2>Недвижимость ({realEstate.length})</h2>
+      <h2>Недвижимость</h2>
       <div className="table-wrapper">
         <table className="real-estate-table">
           <thead>
@@ -60,8 +91,44 @@ export const RealEstateTable: React.FC<RealEstateTableProps> = ({ realEstate, on
                   <td>
                     <span className="type-badge">{getTypeLabel(property.type)}</span>
                   </td>
-                  <td className="price-cell">
-                    {property.currentValue.toLocaleString('ru-RU')} ₽
+                  <td className="price-cell editable-cell">
+                    {editingId === property.id ? (
+                      <div className="edit-wrapper">
+                        <input
+                          type="number"
+                          value={editValue}
+                          onChange={(e) => setEditValue(e.target.value)}
+                          onKeyDown={(e) => handleKeyPress(e, property.id)}
+                          className="edit-input"
+                          autoFocus
+                          min="0"
+                          step="1000"
+                        />
+                        <button 
+                          className="save-btn" 
+                          onClick={() => handleSaveEdit(property.id)}
+                          title="Сохранить"
+                        >
+                          ✓
+                        </button>
+                        <button 
+                          className="cancel-btn" 
+                          onClick={handleCancelEdit}
+                          title="Отмена"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ) : (
+                      <div 
+                        className="editable-value"
+                        onClick={() => handleStartEdit(property.id, property.currentValue)}
+                        title="Нажмите для редактирования"
+                      >
+                        {property.currentValue.toLocaleString('ru-RU')} ₽
+                        <span className="edit-icon">✎</span>
+                      </div>
+                    )}
                   </td>
                   <td>
                     {property.purchasePrice ? `${property.purchasePrice.toLocaleString('ru-RU')} ₽` : '—'}
