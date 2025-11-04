@@ -40,6 +40,11 @@ app.get('/', (req, res) => {
   });
 });
 
+// Health check endpoint для Render
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/portfolio', portfolioRoutes);
 
