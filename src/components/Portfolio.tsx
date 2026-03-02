@@ -5,6 +5,7 @@ import {
   RealEstate,
   Deposit,
   Crypto,
+  User,
 } from "../types";
 import { SecuritiesTable } from "./SecuritiesTable";
 import { RealEstateTable } from "./RealEstateTable";
@@ -24,13 +25,29 @@ import { updateMultipleCryptos } from "../services/cryptoApi";
 import { fetchExchangeRates, ExchangeRates } from "../services/currencyApi";
 import { portfolioAPI } from "../services/api";
 import "./Portfolio.css";
+import "./InvestorDashboard/InvestorDashboard.css";
+import { InvestorDashboard } from "./InvestorDashboard/InvestorDashboard";
+import { AllocationPanel } from "./InvestorDashboard/AllocationPanel";
+import { DividendCalendar } from "./InvestorDashboard/DividendCalendar";
+import { GoalsPanel } from "./InvestorDashboard/GoalsPanel";
+import type { AllocationTargets, Goal } from "../types/investor";
+import { DEFAULT_TARGETS, normalizeTargets } from "../utils/investor";
+import { loadJson, saveJson } from "../utils/storage";
 
 interface PortfolioProps {
   portfolio: PortfolioType;
   onUpdatePortfolio: (portfolio: PortfolioType) => void;
-  user?: any;
+  user?: User;
   onLogout?: () => void;
 }
+
+type PortfolioTab =
+  | "dashboard"
+  | "assets"
+  | "charts"
+  | "allocation"
+  | "dividends"
+  | "goals";
 
 export const Portfolio: React.FC<PortfolioProps> = ({
   portfolio,
@@ -46,6 +63,9 @@ export const Portfolio: React.FC<PortfolioProps> = ({
   const [updatingCryptoPrices, setUpdatingCryptoPrices] = useState(false);
   const [exchangeRates, setExchangeRates] = useState<ExchangeRates | null>(null);
   const hasInitialLoad = useRef(false);
+  const [tab, setTab] = useState<PortfolioTab>("dashboard");
+  const [goals, setGoals] = useState<Goal[]>([]);
+  const [targets, setTargets] = useState<AllocationTargets>(DEFAULT_TARGETS);
 
   const handleAddSecurity = async (securityData: Omit<Security, "id">) => {
     try {
@@ -403,6 +423,28 @@ export const Portfolio: React.FC<PortfolioProps> = ({
   const totalValue = calculateTotalPortfolioValueInRUB(portfolio, rates);
   const monthlyIncome = calculateTotalExpectedIncomeInRUB(portfolio, rates);
 
+  const storageKeyBase = `investor_v1_${user?.id ?? "anon"}`;
+
+  // Локальные настройки (цели/таргеты) под пользователя
+  useEffect(() => {
+    const loadedGoals = loadJson<Goal[]>(`${storageKeyBase}_goals`, []);
+    const loadedTargets = loadJson<AllocationTargets>(
+      `${storageKeyBase}_targets`,
+      DEFAULT_TARGETS
+    );
+    setGoals(Array.isArray(loadedGoals) ? loadedGoals : []);
+    setTargets(normalizeTargets(loadedTargets));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [storageKeyBase]);
+
+  useEffect(() => {
+    saveJson(`${storageKeyBase}_goals`, goals);
+  }, [storageKeyBase, goals]);
+
+  useEffect(() => {
+    saveJson(`${storageKeyBase}_targets`, targets);
+  }, [storageKeyBase, targets]);
+
   return (
     <div className='portfolio'>
       <div className='portfolio-header'>
@@ -439,71 +481,153 @@ export const Portfolio: React.FC<PortfolioProps> = ({
             </div>
           </div>
         </div>
+
+        <div className="investor-tabs" role="tablist" aria-label="Навигация портфеля">
+          <button
+            className={`investor-tab ${tab === "dashboard" ? "active" : ""}`}
+            onClick={() => setTab("dashboard")}
+            role="tab"
+            aria-selected={tab === "dashboard"}
+          >
+            Дашборд
+          </button>
+          <button
+            className={`investor-tab ${tab === "assets" ? "active" : ""}`}
+            onClick={() => setTab("assets")}
+            role="tab"
+            aria-selected={tab === "assets"}
+          >
+            Активы
+          </button>
+          <button
+            className={`investor-tab ${tab === "charts" ? "active" : ""}`}
+            onClick={() => setTab("charts")}
+            role="tab"
+            aria-selected={tab === "charts"}
+          >
+            Графики
+          </button>
+          <button
+            className={`investor-tab ${tab === "allocation" ? "active" : ""}`}
+            onClick={() => setTab("allocation")}
+            role="tab"
+            aria-selected={tab === "allocation"}
+          >
+            Аллокация
+          </button>
+          <button
+            className={`investor-tab ${tab === "dividends" ? "active" : ""}`}
+            onClick={() => setTab("dividends")}
+            role="tab"
+            aria-selected={tab === "dividends"}
+          >
+            Дивиденды
+          </button>
+          <button
+            className={`investor-tab ${tab === "goals" ? "active" : ""}`}
+            onClick={() => setTab("goals")}
+            role="tab"
+            aria-selected={tab === "goals"}
+          >
+            Цели
+          </button>
+        </div>
       </div>
 
-      <div className='portfolio-actions'>
-        <button className='add-btn' onClick={() => setShowAddSecurity(true)}>
-          + Добавить ценную бумагу
-        </button>
-        <button className='add-btn' onClick={() => setShowAddRealEstate(true)}>
-          + Добавить недвижимость
-        </button>
-        <button className='add-btn' onClick={() => setShowAddDeposit(true)}>
-          + Добавить депозит
-        </button>
-        <button className='add-btn' onClick={() => setShowAddCrypto(true)}>
-          + Добавить криптовалюту
-        </button>
-      </div>
+      {tab === "assets" && (
+        <div className='portfolio-actions'>
+          <button className='add-btn' onClick={() => setShowAddSecurity(true)}>
+            + Добавить ценную бумагу
+          </button>
+          <button className='add-btn' onClick={() => setShowAddRealEstate(true)}>
+            + Добавить недвижимость
+          </button>
+          <button className='add-btn' onClick={() => setShowAddDeposit(true)}>
+            + Добавить депозит
+          </button>
+          <button className='add-btn' onClick={() => setShowAddCrypto(true)}>
+            + Добавить криптовалюту
+          </button>
+          <button
+            className='add-btn update-btn'
+            disabled={updatingPrices || updatingCryptoPrices}
+            onClick={updateAllPricesUnified}
+            title="Обновить котировки (акции и крипто)"
+          >
+            {updatingPrices || updatingCryptoPrices ? "Обновляем цены..." : "Обновить цены"}
+          </button>
+        </div>
+      )}
 
-      {portfolio.securities.length > 0 && (
-        <SecuritiesTable
-          securities={portfolio.securities}
-          onRemove={handleRemoveSecurity}
-          onUpdateQuantity={handleUpdateSecurityQuantity}
-          updatingPrices={updatingPrices}
+      {tab === "dashboard" && <InvestorDashboard portfolio={portfolio} rates={rates} />}
+
+      {tab === "allocation" && (
+        <AllocationPanel
+          portfolio={portfolio}
+          rates={rates}
+          targets={targets}
+          onChangeTargets={setTargets}
         />
       )}
 
-      {portfolio.realEstate.length > 0 && (
-        <RealEstateTable
-          realEstate={portfolio.realEstate}
-          onRemove={handleRemoveRealEstate}
-          onUpdateValue={handleUpdateRealEstateValue}
-        />
+      {tab === "dividends" && <DividendCalendar portfolio={portfolio} rates={rates} />}
+
+      {tab === "goals" && <GoalsPanel goals={goals} onChange={setGoals} />}
+
+      {tab === "charts" && (
+        <PortfolioCharts portfolio={portfolio} exchangeRates={exchangeRates} />
       )}
 
-      {portfolio.deposits && portfolio.deposits.length > 0 && (
-        <DepositsTable
-          deposits={portfolio.deposits}
-          onRemove={handleRemoveDeposit}
-          onUpdateAmount={handleUpdateDepositAmount}
-        />
+      {tab === "assets" && (
+        <>
+          {portfolio.securities.length > 0 && (
+            <SecuritiesTable
+              securities={portfolio.securities}
+              onRemove={handleRemoveSecurity}
+              onUpdateQuantity={handleUpdateSecurityQuantity}
+              updatingPrices={updatingPrices}
+            />
+          )}
+
+          {portfolio.realEstate.length > 0 && (
+            <RealEstateTable
+              realEstate={portfolio.realEstate}
+              onRemove={handleRemoveRealEstate}
+              onUpdateValue={handleUpdateRealEstateValue}
+            />
+          )}
+
+          {portfolio.deposits && portfolio.deposits.length > 0 && (
+            <DepositsTable
+              deposits={portfolio.deposits}
+              onRemove={handleRemoveDeposit}
+              onUpdateAmount={handleUpdateDepositAmount}
+            />
+          )}
+
+          {portfolio.cryptocurrencies && portfolio.cryptocurrencies.length > 0 && (
+            <CryptosTable
+              cryptocurrencies={portfolio.cryptocurrencies}
+              onRemove={handleRemoveCrypto}
+              onUpdateAmount={handleUpdateCryptoAmount}
+              updatingPrices={updatingCryptoPrices}
+            />
+          )}
+
+          {portfolio.securities.length === 0 &&
+            portfolio.realEstate.length === 0 &&
+            (!portfolio.deposits || portfolio.deposits.length === 0) &&
+            (!portfolio.cryptocurrencies ||
+              portfolio.cryptocurrencies.length === 0) && (
+              <div className='empty-state'>
+                <p>
+                  Ваш портфель пуст. Добавьте ценные бумаги, недвижимость, депозиты
+                  или криптовалюты, чтобы начать отслеживать свои инвестиции.
+                </p>
+              </div>
+            )}
+        </>
       )}
-
-      {portfolio.cryptocurrencies && portfolio.cryptocurrencies.length > 0 && (
-        <CryptosTable
-          cryptocurrencies={portfolio.cryptocurrencies}
-          onRemove={handleRemoveCrypto}
-          onUpdateAmount={handleUpdateCryptoAmount}
-          updatingPrices={updatingCryptoPrices}
-        />
-      )}
-
-      {portfolio.securities.length === 0 &&
-        portfolio.realEstate.length === 0 &&
-        (!portfolio.deposits || portfolio.deposits.length === 0) &&
-        (!portfolio.cryptocurrencies ||
-          portfolio.cryptocurrencies.length === 0) && (
-          <div className='empty-state'>
-            <p>
-              Ваш портфель пуст. Добавьте ценные бумаги, недвижимость, депозиты
-              или криптовалюты, чтобы начать отслеживать свои инвестиции.
-            </p>
-          </div>
-        )}
-
-      <PortfolioCharts portfolio={portfolio} exchangeRates={exchangeRates} />
 
       {showAddSecurity && (
         <AddSecurityForm

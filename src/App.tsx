@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Portfolio } from './components/Portfolio';
 import { LoginForm } from './components/Auth/LoginForm';
 import { RegisterForm } from './components/Auth/RegisterForm';
-import { Portfolio as PortfolioType } from './types';
+import { Portfolio as PortfolioType, User } from './types';
 import { authAPI, portfolioAPI } from './services/api';
 import './App.css';
 
@@ -16,7 +16,7 @@ function App() {
     deposits: [],
     cryptocurrencies: [],
   });
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Проверка авторизации при загрузке

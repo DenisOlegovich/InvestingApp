@@ -57,3 +57,10 @@ export interface Portfolio {
 
 export type PortfolioItem = Security | RealEstate | Deposit | Crypto;
 
+export interface User {
+  id: number;
+  email: string;
+  name: string;
+  created_at?: string;
+}
+
