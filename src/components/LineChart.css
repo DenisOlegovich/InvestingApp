@@ -1,0 +1,55 @@
+.line-chart-container {
+  background: var(--app-card-bg);
+  border: 1px solid rgba(79, 172, 254, 0.18);
+  border-radius: 14px;
+  padding: 16px;
+}
+
+[data-theme="light"] .line-chart-container {
+  border-color: rgba(107, 122, 144, 0.12);
+}
+
+.line-chart-title {
+  font-size: 16px;
+  margin-bottom: 12px;
+  color: var(--app-text);
+}
+
+.line-chart-empty {
+  color: var(--app-muted);
+  padding: 24px;
+  text-align: center;
+}
+
+.line-chart-content {
+  min-height: 160px;
+  width: 100%;
+}
+
+.line-chart-svg {
+  display: block;
+  width: 100%;
+  min-height: 160px;
+}
+
+.line-chart-axis-label {
+  fill: var(--app-muted);
+}
+
+.line-chart-legend {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--app-muted);
+}
+
+.line-chart-legend .positive {
+  color: #4caf50;
+  font-weight: 600;
+}
+
+.line-chart-legend .negative {
+  color: #ef5350;
+  font-weight: 600;
+}

@@ -1,3 +1,15 @@
+/** Форматирует сумму в рублях */
+export const formatCurrencyRub = (
+  value: number,
+  options: { maxFractionDigits?: number; minFractionDigits?: number } = {}
+): string => {
+  const { maxFractionDigits = 0, minFractionDigits } = options;
+  return `${value.toLocaleString('ru-RU', {
+    maximumFractionDigits: maxFractionDigits,
+    ...(minFractionDigits !== undefined && { minimumFractionDigits: minFractionDigits }),
+  })} ₽`;
+};
+
 // Форматирует число с пробелами для отображения
 export const formatNumberWithSpaces = (value: string): string => {
   // Удаляем все кроме цифр и точки

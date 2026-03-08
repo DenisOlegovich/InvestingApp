@@ -34,8 +34,8 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchT
     try {
       await authAPI.register(email, password, name);
       onSuccess();
-    } catch (err: any) {
-      setError(err.message || 'Ошибка регистрации');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Ошибка регистрации');
     } finally {
       setLoading(false);
     }

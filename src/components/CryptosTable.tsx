@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Crypto } from '../types';
 import { calculatePriceChange, calculatePriceChangePercent } from '../utils/calculations';
+import { ConfirmDialog } from './ConfirmDialog';
 import './CryptosTable.css';
 
 interface CryptosTableProps {
@@ -18,14 +19,20 @@ export const CryptosTable: React.FC<CryptosTableProps> = ({
 }) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<string>('');
+  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string } | null>(null);
 
   if (cryptocurrencies.length === 0) {
     return null;
   }
 
-  const handleRemove = (id: string, name: string) => {
-    if (window.confirm(`Вы уверены, что хотите удалить "${name}"?`)) {
-      onRemove(id);
+  const handleRemoveClick = (id: string, name: string) => {
+    setDeleteConfirm({ id, name });
+  };
+
+  const handleConfirmRemove = () => {
+    if (deleteConfirm) {
+      onRemove(deleteConfirm.id);
+      setDeleteConfirm(null);
     }
   };
 
@@ -187,7 +194,7 @@ export const CryptosTable: React.FC<CryptosTableProps> = ({
                   <td data-label="Действия">
                     <button 
                       className="remove-btn" 
-                      onClick={() => handleRemove(crypto.id, crypto.name)}
+                      onClick={() => handleRemoveClick(crypto.id, crypto.name)}
                       title="Удалить"
                     >
                       ×
@@ -199,6 +206,12 @@ export const CryptosTable: React.FC<CryptosTableProps> = ({
           </tbody>
         </table>
       </div>
+      <ConfirmDialog
+        open={!!deleteConfirm}
+        message={deleteConfirm ? `Вы уверены, что хотите удалить «${deleteConfirm.name}»?` : ''}
+        onConfirm={handleConfirmRemove}
+        onCancel={() => setDeleteConfirm(null)}
+      />
     </div>
   );
 };

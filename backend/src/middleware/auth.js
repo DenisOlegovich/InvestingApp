@@ -1,5 +1,7 @@
 import jwt from 'jsonwebtoken';
 
+const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-in-production';
+
 export const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
@@ -9,7 +11,7 @@ export const authenticateToken = (req, res, next) => {
   }
 
   try {
-    const user = jwt.verify(token, process.env.JWT_SECRET);
+    const user = jwt.verify(token, JWT_SECRET);
     req.user = user; // Добавляем данные пользователя в request
     next();
   } catch (error) {
@@ -24,7 +26,7 @@ export const generateToken = (user) => {
       email: user.email,
       name: user.name
     },
-    process.env.JWT_SECRET,
+    JWT_SECRET,
     { expiresIn: '7d' } // Токен действителен 7 дней
   );
 };

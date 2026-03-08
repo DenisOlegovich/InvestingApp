@@ -117,6 +117,34 @@ export function calculateCryptoMonthlyIncome(crypto: Crypto): number {
   return (totalValue * crypto.stakingYield / 100) / 12;
 }
 
+// Рассчитывает стоимость портфеля на момент открытия (previous close) в РУБЛЯХ
+export function calculatePortfolioValueAtOpenInRUB(
+  portfolio: Portfolio,
+  rates: ExchangeRates
+): number {
+  const securitiesValue = portfolio.securities.reduce((sum, security) => {
+    const value = security.previousPrice * security.quantity;
+    return sum + convertToRUB(value, security.currency, rates);
+  }, 0);
+
+  const realEstateValue = portfolio.realEstate.reduce(
+    (sum, property) => sum + property.currentValue,
+    0
+  );
+
+  const depositsValue = portfolio.deposits.reduce((sum, deposit) => {
+    const value = calculateDepositCurrentValue(deposit);
+    return sum + convertToRUB(value, deposit.currency, rates);
+  }, 0);
+
+  const cryptosValue = portfolio.cryptocurrencies.reduce((sum, crypto) => {
+    const value = crypto.previousPrice * crypto.amount;
+    return sum + convertToRUB(value, 'USD', rates);
+  }, 0);
+
+  return securitiesValue + realEstateValue + depositsValue + cryptosValue;
+}
+
 // Рассчитывает общую стоимость портфеля в РУБЛЯХ с учетом курсов валют
 export function calculateTotalPortfolioValueInRUB(
   portfolio: Portfolio,

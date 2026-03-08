@@ -10,6 +10,172 @@ export interface StockQuote {
   currency: 'RUB' | 'USD' | 'EUR'; // Валюта цены
 }
 
+export interface SearchQuote {
+  symbol: string;
+  shortname: string;
+  longname?: string;
+  exchange: string;
+  typeDisp: string;
+  quoteType: string;
+}
+
+const YAHOO_SEARCH_URL = 'https://query1.finance.yahoo.com/v1/finance/search';
+const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
+
+// Транслитерация кириллицы в латиницу (для поиска русских названий)
+const RU_TO_EN: Record<string, string> = {
+  а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ё: 'e', ж: 'zh', з: 'z',
+  и: 'i', й: 'y', к: 'k', л: 'l', м: 'm', н: 'n', о: 'o', п: 'p', р: 'r',
+  с: 's', т: 't', у: 'u', ф: 'f', х: 'kh', ц: 'ts', ч: 'ch', ш: 'sh', щ: 'shch',
+  ъ: '', ы: 'y', ь: '', э: 'e', ю: 'yu', я: 'ya',
+};
+// Известные русские компании -> англоязычное название в Yahoo
+const RU_COMPANY_ALIASES: Record<string, string> = {
+  сбербанк: 'Sberbank', сбер: 'Sberbank', газпром: 'Gazprom', лукойл: 'Lukoil',
+  яндекс: 'Yandex', роснефть: 'Rosneft', татнефть: 'Tatneft', норникель: 'Norilsk',
+  северсталь: 'Severstal', гмк: 'Norilsk', мосбиржа: 'Moscow Exchange',
+  мосбирже: 'Moscow Exchange', втб: 'VTB Bank', тинькофф: 'Tinkoff',
+  тинкофф: 'Tinkoff', нлмк: 'NLMK', ммк: 'MMK', альфа: 'Alfa',
+};
+
+// Локальный список: запрос (ключевое слово) -> тикеры (Yahoo не возвращает российские бумаги)
+const RU_SEARCH_FALLBACK: Array<{ keywords: string[]; symbol: string; name: string }> = [
+  { keywords: ['сбербанк', 'сбер', 'sber', 'sberbank'], symbol: 'SBER', name: 'Сбербанк' },
+  { keywords: ['газпром', 'gazp', 'gazprom'], symbol: 'GAZP', name: 'Газпром' },
+  { keywords: ['лукойл', 'лук', 'lukoil', 'lkoh'], symbol: 'LKOH', name: 'Лукойл' },
+  { keywords: ['яндекс', 'yandex', 'yndx'], symbol: 'YNDX', name: 'Яндекс' },
+  { keywords: ['роснефть', 'rosneft', 'rosn'], symbol: 'ROSN', name: 'Роснефть' },
+  { keywords: ['татнефть', 'tatneft', 'tatn'], symbol: 'TATN', name: 'Татнефть' },
+  { keywords: ['норникель', 'гмк', 'norilsk', 'gmkn'], symbol: 'GMKN', name: 'ГМК Норникель' },
+  { keywords: ['северсталь', 'severstal', 'chmf'], symbol: 'CHMF', name: 'Северсталь' },
+  { keywords: ['нлмк', 'nlmk'], symbol: 'NLMK', name: 'НЛМК' },
+  { keywords: ['ммк', 'магнитогорск', 'mmk'], symbol: 'MMK', name: 'ММК' },
+  { keywords: ['мосбиржа', 'мосбире', 'moex', 'moscow exchange'], symbol: 'MOEX', name: 'Московская биржа' },
+  { keywords: ['тинькофф', 'тинкофф', 'tinkoff', 'tcsg'], symbol: 'TCSG', name: 'TCS Group (Тинькофф)' },
+];
+
+function hasCyrillic(str: string): boolean {
+  return /[а-яёәіңғүұқөһ]/.test(str.toLowerCase());
+}
+
+function transliterateRu(str: string): string {
+  let result = '';
+  const lower = str.toLowerCase();
+  for (let i = 0; i < lower.length; i++) {
+    const c = lower[i];
+    if (RU_TO_EN[c]) {
+      result += RU_TO_EN[c];
+    } else if (c >= 'a' && c <= 'z') {
+      result += c;
+    } else if (c >= '0' && c <= '9') {
+      result += c;
+    } else if (c === ' ' || c === '-') {
+      result += c;
+    }
+  }
+  return result.trim();
+}
+
+function getSearchQuery(query: string): string[] {
+  const q = query.trim().toLowerCase();
+  const queries: string[] = [query.trim()];
+  const alias = RU_COMPANY_ALIASES[q];
+  if (alias) {
+    queries.push(alias);
+  }
+  if (hasCyrillic(query)) {
+    const trans = transliterateRu(query);
+    if (trans && trans !== q) {
+      queries.push(trans.charAt(0).toUpperCase() + trans.slice(1));
+    }
+  }
+  return [...new Set(queries)];
+}
+
+function parseQuotes(data: { quotes?: unknown[] }): SearchQuote[] {
+  const raw = data?.quotes || [];
+  return raw
+    .filter((item: { quoteType?: string }) => {
+      const t = item.quoteType || '';
+      if (t === 'CRYPTOCURRENCY') return false;
+      return ['EQUITY', 'ETF', 'FUND'].includes(t) || !t;
+    })
+    .map((item: Record<string, unknown>) => ({
+      symbol: (item.symbol as string) || '',
+      shortname: (item.shortname as string) || (item.longname as string) || '',
+      longname: (item.longname as string) || (item.shortname as string),
+      exchange: (item.exchange as string) || '',
+      typeDisp: (item.typeDisp as string) || '',
+      quoteType: (item.quoteType as string) || '',
+    }))
+    .filter((item: SearchQuote) => Boolean(item.symbol));
+}
+
+function getFallbackRuResults(query: string): SearchQuote[] {
+  const q = query.trim().toLowerCase();
+  if (q.length < 2) return [];
+
+  const results: SearchQuote[] = [];
+  for (const item of RU_SEARCH_FALLBACK) {
+    const matches = item.keywords.some((kw) => q.includes(kw) || kw.includes(q));
+    if (matches) {
+      results.push({
+        symbol: item.symbol,
+        shortname: item.name,
+        longname: item.name,
+        exchange: 'MCX',
+        typeDisp: 'Акция',
+        quoteType: 'EQUITY',
+      });
+    }
+  }
+  return results;
+}
+
+/**
+ * Поиск тикеров по названию компании (через CORS-прокси, поддерживает русский и английский)
+ */
+export async function searchTickers(query: string): Promise<SearchQuote[]> {
+  const q = query.trim();
+  if (!q || q.length < 2) return [];
+
+  const seen = new Set<string>();
+  const allQuotes: SearchQuote[] = [];
+
+  // 1. Локальный поиск по русским названиям (Yahoo не отдаёт российские бумаги)
+  const fallback = getFallbackRuResults(q);
+  for (const item of fallback) {
+    if (!seen.has(item.symbol)) {
+      seen.add(item.symbol);
+      allQuotes.push(item);
+    }
+  }
+
+  // 2. Поиск через Yahoo (для иностранных акций и дублирования)
+  const queries = getSearchQuery(q);
+  for (const searchQ of queries) {
+    try {
+      const url = `${YAHOO_SEARCH_URL}?q=${encodeURIComponent(searchQ)}&quotesCount=15&newsCount=0`;
+      const response = await fetch(CORS_PROXY + encodeURIComponent(url));
+      if (!response.ok) continue;
+
+      const data = await response.json();
+      const quotes = parseQuotes(data);
+      for (const item of quotes) {
+        if (!seen.has(item.symbol)) {
+          seen.add(item.symbol);
+          allQuotes.push(item);
+        }
+      }
+      if (allQuotes.length >= 15) break;
+    } catch {
+      continue;
+    }
+  }
+
+  return allQuotes;
+}
+
 /**
  * Получает данные о ценной бумаге по тикеру
  * Использует публичные API для получения актуальных данных

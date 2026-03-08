@@ -38,6 +38,13 @@ class User {
     return stmt.all();
   }
 
+  // Обновить пароль пользователя
+  static async updatePassword(email, newPassword) {
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    const stmt = db.prepare('UPDATE users SET password = ?, updated_at = CURRENT_TIMESTAMP WHERE email = ?');
+    return stmt.run(hashedPassword, email);
+  }
+
   // Обновить пользователя
   static update(id, { name, email }) {
     const stmt = db.prepare(`

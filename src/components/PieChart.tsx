@@ -68,20 +68,6 @@ export const PieChart: React.FC<PieChartProps> = ({
 
   const isFullCircle = segments.length === 1 && segments[0].percentage >= 99.9;
 
-  // Логирование для отладки
-  console.log('PieChart:', title, {
-    segmentsCount: segments.length,
-    segments: segments.map(s => ({
-      label: s.label,
-      value: s.value,
-      percentage: s.percentage,
-      startAngle: s.startAngle,
-      endAngle: s.endAngle
-    })),
-    isFullCircle,
-    total
-  });
-
   return (
     <div className="pie-chart-container">
       <h3 className="pie-chart-title">{title}</h3>

@@ -4,14 +4,37 @@
   padding: 0;
 }
 
+:root,
+[data-theme="dark"] {
+  --app-bg: #0a0e1a;
+  --app-bg2: #1a1f3a;
+  --app-bg3: #0f1729;
+  --app-text: #e0e0e0;
+  --app-muted: #9e9e9e;
+  --app-accent: rgba(79, 172, 254, 0.3);
+  --app-accent-strong: #4facfe;
+  --app-card-bg: rgba(26, 31, 58, 0.55);
+}
+
+[data-theme="light"] {
+  --app-bg: #eae6e0;
+  --app-bg2: #e0dbd4;
+  --app-bg3: #d5cfc6;
+  --app-text: #4a5568;
+  --app-muted: #718096;
+  --app-accent: rgba(107, 122, 144, 0.15);
+  --app-accent-strong: #6b7a90;
+  --app-card-bg: rgba(240, 236, 230, 0.9);
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  color: #e0e0e0;
-  background-color: #0a0e1a;
+  color: var(--app-text);
+  background-color: var(--app-bg);
   overflow-x: hidden;
 }
 
@@ -23,11 +46,11 @@ body {
 .app {
   min-height: 100vh;
   position: relative;
-  background: linear-gradient(135deg, #0a0e1a 0%, #1a1f3a 50%, #0f1729 100%);
+  background: linear-gradient(135deg, var(--app-bg) 0%, var(--app-bg2) 50%, var(--app-bg3) 100%);
   background-attachment: fixed;
 }
 
-/* Анимированный фон с геометрическими фигурами */
+/* Анимированный фон */
 .app::before {
   content: '';
   position: fixed;
@@ -44,6 +67,13 @@ body {
   z-index: 0;
 }
 
+[data-theme="light"] .app::before {
+  background-image: 
+    radial-gradient(circle at 20% 50%, rgba(107, 122, 144, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(118, 140, 110, 0.02) 0%, transparent 50%);
+  animation: none;
+}
+
 @keyframes backgroundMove {
   0% {
     transform: translateY(0) scale(1);
@@ -53,7 +83,6 @@ body {
   }
 }
 
-/* Плавающие круги на фоне */
 .app::after {
   content: '';
   position: fixed;
@@ -68,6 +97,11 @@ body {
   z-index: 0;
 }
 
+[data-theme="light"] .app::after {
+  background: radial-gradient(circle, rgba(107, 122, 144, 0.04) 0%, transparent 70%);
+  animation: none;
+}
+
 @keyframes float {
   0%, 100% {
     transform: translate(0, 0) rotate(0deg);
@@ -78,6 +112,27 @@ body {
   66% {
     transform: translate(50px, -50px) rotate(240deg);
   }
+}
+
+.app-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  color: var(--app-text);
+  font-size: 24px;
+  font-weight: 500;
+}
+
+.theme-toggle {
+  background: var(--app-card-bg);
+  border: 1px solid var(--app-accent);
+  color: var(--app-text);
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-left: 8px;
 }
 
 code {

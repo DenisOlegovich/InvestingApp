@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Security } from '../types';
-import { fetchStockData } from '../services/stockApi';
+import { fetchStockData, searchTickers, SearchQuote } from '../services/stockApi';
 import { formatNumberWithSpaces, parseFormattedNumber } from '../utils/formatNumber';
 import './AddSecurityForm.css';
 
@@ -15,6 +15,11 @@ export const AddSecurityForm: React.FC<AddSecurityFormProps> = ({ onAdd, onClose
     type: 'stock' as 'stock' | 'bond' | 'etf',
     quantity: '',
   });
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<SearchQuote[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [showDropdown, setShowDropdown] = useState(false);
   const [loadedData, setLoadedData] = useState<{
     name: string;
     currentPrice: number;
@@ -26,24 +31,26 @@ export const AddSecurityForm: React.FC<AddSecurityFormProps> = ({ onAdd, onClose
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleTickerBlur = async () => {
-    const ticker = formData.ticker.toUpperCase().trim();
-    if (!ticker) return;
+  const loadByTicker = useCallback(async (ticker: string, preferredName?: string) => {
+    const t = ticker.toUpperCase().trim();
+    if (!t) return;
 
     setLoading(true);
     setError(null);
-    
+
     try {
-      const stockData = await fetchStockData(ticker);
+      const stockData = await fetchStockData(t);
       if (stockData) {
+        const displayName = preferredName?.trim() || stockData.name;
         setLoadedData({
-          name: stockData.name,
+          name: displayName,
           currentPrice: stockData.price,
           previousPrice: stockData.previousClose,
           expectedDividend: stockData.dividendYield || 0,
           dividendFrequency: stockData.dividendFrequency || 'yearly',
           currency: stockData.currency,
         });
+        setFormData((f) => ({ ...f, ticker: t }));
       } else {
         setError('Не удалось загрузить данные по тикеру. Проверьте правильность тикера.');
         setLoadedData(null);
@@ -54,17 +61,62 @@ export const AddSecurityForm: React.FC<AddSecurityFormProps> = ({ onAdd, onClose
     } finally {
       setLoading(false);
     }
+  }, []);
+
+  useEffect(() => {
+    if (!searchQuery || searchQuery.length < 2) {
+      setSearchResults([]);
+      setSearching(false);
+      setSearchError(null);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setSearching(true);
+      setSearchError(null);
+      try {
+        const results = await searchTickers(searchQuery);
+        setSearchResults(results);
+        setShowDropdown(true);
+        setSearchError(null);
+      } catch {
+        setSearchResults([]);
+        setSearchError('Ошибка поиска. Проверьте интернет-соединение.');
+      } finally {
+        setSearching(false);
+      }
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  const handleSearchSelect = (item: SearchQuote) => {
+    setSearchQuery('');
+    setSearchResults([]);
+    setSearchError(null);
+    setShowDropdown(false);
+    setFormData((f) => ({ ...f, ticker: item.symbol }));
+    const nameFromSearch = item.longname || item.shortname;
+    loadByTicker(item.symbol, nameFromSearch);
+  };
+
+  const handleTickerBlur = () => {
+    const ticker = formData.ticker.toUpperCase().trim();
+    if (ticker && !loadedData) {
+      loadByTicker(ticker);
+    }
+    setTimeout(() => setShowDropdown(false), 200);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!loadedData) {
       setError('Пожалуйста, загрузите данные по тикеру перед добавлением');
       return;
     }
 
-    if (!formData.quantity || parseInt(formData.quantity) < 1) {
+    if (!formData.quantity || parseInt(parseFormattedNumber(formData.quantity)) < 1) {
       setError('Укажите количество (минимум 1)');
       return;
     }
@@ -74,7 +126,7 @@ export const AddSecurityForm: React.FC<AddSecurityFormProps> = ({ onAdd, onClose
       ticker: formData.ticker.toUpperCase().trim(),
       type: formData.type,
       currentPrice: loadedData.currentPrice,
-      previousPrice: loadedData.previousPrice, // При добавлении previousPrice = previousClose из API
+      previousPrice: loadedData.previousPrice,
       quantity: parseInt(parseFormattedNumber(formData.quantity)),
       expectedDividend: loadedData.expectedDividend,
       dividendFrequency: loadedData.dividendFrequency,
@@ -90,8 +142,55 @@ export const AddSecurityForm: React.FC<AddSecurityFormProps> = ({ onAdd, onClose
           <h2>Добавить ценную бумагу</h2>
           <button className="close-btn" onClick={onClose}>×</button>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="form">
+          <div className="form-group">
+            <label>Поиск по названию</label>
+            <div className="search-input-wrap">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setShowDropdown(true);
+                }}
+                onFocus={() => searchResults.length > 0 && setShowDropdown(true)}
+                onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
+                placeholder="Например: Apple, Сбербанк, Microsoft"
+                disabled={loading}
+                className="search-input"
+              />
+              {searching && <span className="loading-spinner">⏳</span>}
+              {searchError && !searching && (
+                <small className="hint" style={{ color: '#ff8a80', marginTop: 4 }}>
+                  {searchError}
+                </small>
+              )}
+              {showDropdown && searchResults.length > 0 && (
+                <ul className="search-dropdown">
+                  {searchResults.map((item) => (
+                    <li
+                      key={item.symbol}
+                      className="search-dropdown-item"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        handleSearchSelect(item);
+                      }}
+                    >
+                      <span className="search-item-symbol">{item.symbol}</span>
+                      <span className="search-item-name">
+                        {item.longname || item.shortname || item.symbol}
+                      </span>
+                      {item.typeDisp && (
+                        <span className="search-item-type">{item.typeDisp}</span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+
           <div className="form-group">
             <label>Тикер *</label>
             <div className="input-with-button">
@@ -104,13 +203,13 @@ export const AddSecurityForm: React.FC<AddSecurityFormProps> = ({ onAdd, onClose
                   setError(null);
                 }}
                 onBlur={handleTickerBlur}
-                placeholder="Например: SBER (₽), AAPL ($), MSFT ($), TSLA ($)"
+                placeholder="SBER, AAPL, MSFT — или выберите из поиска выше"
                 required
                 disabled={loading}
               />
               {loading && <span className="loading-spinner">⏳</span>}
             </div>
-            <small className="hint">Введите тикер и нажмите вне поля для автоматической загрузки</small>
+            <small className="hint">Введите тикер вручную или выберите из поиска по названию</small>
           </div>
 
           {error && (
@@ -130,20 +229,25 @@ export const AddSecurityForm: React.FC<AddSecurityFormProps> = ({ onAdd, onClose
                 <div className="preview-item">
                   <span className="preview-label">Текущая цена:</span>
                   <span className="preview-value">
-                    {loadedData.currentPrice.toLocaleString('ru-RU')} {loadedData.currency === 'USD' ? '$' : loadedData.currency === 'EUR' ? '€' : '₽'}
+                    {loadedData.currentPrice.toLocaleString('ru-RU')}{' '}
+                    {loadedData.currency === 'USD' ? '$' : loadedData.currency === 'EUR' ? '€' : '₽'}
                   </span>
                 </div>
                 <div className="preview-item">
                   <span className="preview-label">Предыдущая цена:</span>
                   <span className="preview-value">
-                    {loadedData.previousPrice.toLocaleString('ru-RU')} {loadedData.currency === 'USD' ? '$' : loadedData.currency === 'EUR' ? '€' : '₽'}
+                    {loadedData.previousPrice.toLocaleString('ru-RU')}{' '}
+                    {loadedData.currency === 'USD' ? '$' : loadedData.currency === 'EUR' ? '€' : '₽'}
                   </span>
                 </div>
                 <div className="preview-item">
                   <span className="preview-label">Изменение:</span>
-                  <span className={`preview-value ${loadedData.currentPrice >= loadedData.previousPrice ? 'positive' : 'negative'}`}>
-                    {(loadedData.currentPrice - loadedData.previousPrice).toFixed(2)} {loadedData.currency === 'USD' ? '$' : loadedData.currency === 'EUR' ? '€' : '₽'}
-                    ({((loadedData.currentPrice - loadedData.previousPrice) / loadedData.previousPrice * 100).toFixed(2)}%)
+                  <span
+                    className={`preview-value ${loadedData.currentPrice >= loadedData.previousPrice ? 'positive' : 'negative'}`}
+                  >
+                    {(loadedData.currentPrice - loadedData.previousPrice).toFixed(2)}{' '}
+                    {loadedData.currency === 'USD' ? '$' : loadedData.currency === 'EUR' ? '€' : '₽'} (
+                    {(((loadedData.currentPrice - loadedData.previousPrice) / loadedData.previousPrice) * 100).toFixed(2)}%)
                   </span>
                 </div>
                 {loadedData.expectedDividend > 0 && (
@@ -155,7 +259,7 @@ export const AddSecurityForm: React.FC<AddSecurityFormProps> = ({ onAdd, onClose
               </div>
             </div>
           )}
-          
+
           <div className="form-group">
             <label>Тип</label>
             <select
@@ -168,7 +272,7 @@ export const AddSecurityForm: React.FC<AddSecurityFormProps> = ({ onAdd, onClose
               <option value="etf">ETF</option>
             </select>
           </div>
-          
+
           <div className="form-group">
             <label>Количество *</label>
             <input
@@ -179,14 +283,14 @@ export const AddSecurityForm: React.FC<AddSecurityFormProps> = ({ onAdd, onClose
               disabled={loading || !loadedData}
             />
           </div>
-          
+
           <div className="form-actions">
             <button type="button" onClick={onClose} className="btn-secondary" disabled={loading}>
               Отмена
             </button>
-            <button 
-              type="submit" 
-              className="btn-primary" 
+            <button
+              type="submit"
+              className="btn-primary"
               disabled={loading || !loadedData || !formData.quantity}
             >
               {loading ? 'Загрузка...' : 'Добавить'}
@@ -197,4 +301,3 @@ export const AddSecurityForm: React.FC<AddSecurityFormProps> = ({ onAdd, onClose
     </div>
   );
 };
-

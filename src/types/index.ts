@@ -55,5 +55,20 @@ export interface Portfolio {
   cryptocurrencies: Crypto[];
 }
 
+/** Пустой портфель (начальное состояние) */
+export const EMPTY_PORTFOLIO: Portfolio = {
+  securities: [],
+  realEstate: [],
+  deposits: [],
+  cryptocurrencies: [],
+};
+
 export type PortfolioItem = Security | RealEstate | Deposit | Crypto;
+
+export interface User {
+  id: number;
+  email: string;
+  name: string;
+  created_at?: string;
+}
 
