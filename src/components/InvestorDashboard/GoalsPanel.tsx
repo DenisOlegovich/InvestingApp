@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import type { Goal } from '../../types/investor';
+import { extendedAPI } from '../../services/api';
 
 function fmtRub(n: number): string {
   return n.toLocaleString('ru-RU', { maximumFractionDigits: 0 }) + ' ₽';
@@ -14,7 +15,8 @@ function monthsBetween(now: Date, target: Date): number {
 export const GoalsPanel: React.FC<{
   goals: Goal[];
   onChange: (goals: Goal[]) => void;
-}> = ({ goals, onChange }) => {
+  userId?: number;
+}> = ({ goals, onChange, userId }) => {
   const [name, setName] = useState('');
   const [targetAmountRub, setTargetAmountRub] = useState<number>(1_000_000);
   const [currentAmountRub, setCurrentAmountRub] = useState<number>(0);
@@ -23,11 +25,12 @@ export const GoalsPanel: React.FC<{
 
   const now = useMemo(() => new Date(), []);
 
-  const addGoal = () => {
+
+  const addGoal = async () => {
     const trimmed = name.trim();
     if (!trimmed) return;
     const g: Goal = {
-      id: crypto.randomUUID(),
+      id: '',
       name: trimmed,
       targetAmountRub: Math.max(0, Number(targetAmountRub) || 0),
       currentAmountRub: Math.max(0, Number(currentAmountRub) || 0),
@@ -35,11 +38,30 @@ export const GoalsPanel: React.FC<{
       monthlyContributionRub: Math.max(0, Number(monthlyContributionRub) || 0) || undefined,
       createdAt: new Date().toISOString(),
     };
-    onChange([g, ...goals]);
+    if (userId) {
+      try {
+        const res = await extendedAPI.goals.create(g) as { id: string };
+        g.id = res.id;
+        onChange([{ ...g }, ...goals]);
+      } catch (e) {
+        g.id = crypto.randomUUID();
+        onChange([g, ...goals]);
+      }
+    } else {
+      g.id = crypto.randomUUID();
+      onChange([g, ...goals]);
+    }
     setName('');
   };
 
-  const removeGoal = (id: string) => onChange(goals.filter(g => g.id !== id));
+  const removeGoal = async (id: string) => {
+    if (userId) {
+      try {
+        await extendedAPI.goals.delete(id);
+      } catch (_) {}
+    }
+    onChange(goals.filter(g => g.id !== id));
+  };
 
   return (
     <div className="panel">

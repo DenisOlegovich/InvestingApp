@@ -185,3 +185,73 @@ export const portfolioAPI = {
     });
   },
 };
+
+// Extended API (goals, transactions, risk, alerts, watchlist, diary, dividends, bonds, import)
+export const extendedAPI = {
+  goals: {
+    get: () => fetchWithAuth("/extended/goals"),
+    create: (data: object) =>
+      fetchWithAuth("/extended/goals", { method: "POST", body: JSON.stringify(data) }),
+    update: (id: string, data: object) =>
+      fetchWithAuth(`/extended/goals/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+    delete: (id: string) =>
+      fetchWithAuth(`/extended/goals/${id}`, { method: "DELETE" }),
+  },
+  transactions: {
+    get: (assetType?: string) =>
+      fetchWithAuth(`/extended/transactions${assetType ? `?assetType=${assetType}` : ""}`),
+    create: (data: object) =>
+      fetchWithAuth("/extended/transactions", { method: "POST", body: JSON.stringify(data) }),
+    delete: (id: string) =>
+      fetchWithAuth(`/extended/transactions/${id}`, { method: "DELETE" }),
+  },
+  riskProfile: {
+    get: () => fetchWithAuth("/extended/risk-profile"),
+    upsert: (data: object) =>
+      fetchWithAuth("/extended/risk-profile", { method: "PUT", body: JSON.stringify(data) }),
+  },
+  alerts: {
+    get: () => fetchWithAuth("/extended/alerts"),
+    create: (data: object) =>
+      fetchWithAuth("/extended/alerts", { method: "POST", body: JSON.stringify(data) }),
+    update: (id: string, data: object) =>
+      fetchWithAuth(`/extended/alerts/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+    delete: (id: string) =>
+      fetchWithAuth(`/extended/alerts/${id}`, { method: "DELETE" }),
+  },
+  watchlist: {
+    get: () => fetchWithAuth("/extended/watchlist"),
+    create: (data: object) =>
+      fetchWithAuth("/extended/watchlist", { method: "POST", body: JSON.stringify(data) }),
+    update: (id: string, data: object) =>
+      fetchWithAuth(`/extended/watchlist/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+    delete: (id: string) =>
+      fetchWithAuth(`/extended/watchlist/${id}`, { method: "DELETE" }),
+  },
+  diary: {
+    get: () => fetchWithAuth("/extended/diary"),
+    create: (data: object) =>
+      fetchWithAuth("/extended/diary", { method: "POST", body: JSON.stringify(data) }),
+    delete: (id: string) =>
+      fetchWithAuth(`/extended/diary/${id}`, { method: "DELETE" }),
+  },
+  dividendPayments: {
+    get: () => fetchWithAuth("/extended/dividend-payments"),
+    create: (data: object) =>
+      fetchWithAuth("/extended/dividend-payments", { method: "POST", body: JSON.stringify(data) }),
+    delete: (id: string) =>
+      fetchWithAuth(`/extended/dividend-payments/${id}`, { method: "DELETE" }),
+  },
+  bondCoupons: {
+    get: () => fetchWithAuth("/extended/bond-coupons"),
+    create: (data: object) =>
+      fetchWithAuth("/extended/bond-coupons", { method: "POST", body: JSON.stringify(data) }),
+    delete: (id: string) =>
+      fetchWithAuth(`/extended/bond-coupons/${id}`, { method: "DELETE" }),
+  },
+  importCSV: (csv: string) =>
+    fetchWithAuth("/extended/import/csv", {
+      method: "POST",
+      body: JSON.stringify({ csv }),
+    }),
+};

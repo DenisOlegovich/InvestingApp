@@ -9,6 +9,12 @@ export interface Security {
   expectedDividend: number; // в процентах годовых
   dividendFrequency: 'monthly' | 'quarterly' | 'yearly';
   currency: 'RUB' | 'USD' | 'EUR'; // Валюта цены
+  sector?: string;
+  country?: string;
+  purchaseDate?: string;
+  couponRate?: number;
+  couponFrequency?: string;
+  maturityDate?: string;
 }
 
 export interface RealEstate {

@@ -20,7 +20,13 @@ class Portfolio {
         quantity: s.quantity,
         expectedDividend: s.expected_dividend,
         dividendFrequency: s.dividend_frequency,
-        currency: s.currency
+        currency: s.currency,
+        sector: s.sector,
+        country: s.country,
+        purchaseDate: s.purchase_date,
+        couponRate: s.coupon_rate,
+        couponFrequency: s.coupon_frequency,
+        maturityDate: s.maturity_date
       })),
       realEstate: realEstate.map(r => ({
         id: r.id.toString(),
@@ -64,14 +70,17 @@ class Portfolio {
     const stmt = db.prepare(`
       INSERT INTO securities (
         user_id, name, ticker, type, current_price, previous_price,
-        quantity, expected_dividend, dividend_frequency, currency
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        quantity, expected_dividend, dividend_frequency, currency,
+        sector, country, purchase_date, coupon_rate, coupon_frequency, maturity_date
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
     
     const result = stmt.run(
       userId, security.name, security.ticker, security.type,
       security.currentPrice, security.previousPrice, security.quantity,
-      security.expectedDividend, security.dividendFrequency, security.currency
+      security.expectedDividend, security.dividendFrequency, security.currency,
+      security.sector ?? null, security.country ?? null, security.purchaseDate ?? null,
+      security.couponRate ?? null, security.couponFrequency ?? null, security.maturityDate ?? null
     );
     
     return result.lastInsertRowid;
@@ -79,19 +88,17 @@ class Portfolio {
 
   // Обновить ценную бумагу
   static updateSecurity(id, userId, updates) {
-    const stmt = db.prepare(`
-      UPDATE securities
-      SET current_price = ?, previous_price = ?, quantity = ?, updated_at = CURRENT_TIMESTAMP
-      WHERE id = ? AND user_id = ?
-    `);
-    
-    return stmt.run(
-      updates.currentPrice,
-      updates.previousPrice,
-      updates.quantity,
-      id,
-      userId
-    );
+    const fields = ['current_price', 'previous_price', 'quantity'];
+    const values = [updates.currentPrice, updates.previousPrice, updates.quantity];
+    if (updates.sector !== undefined) { fields.push('sector'); values.push(updates.sector); }
+    if (updates.country !== undefined) { fields.push('country'); values.push(updates.country); }
+    if (updates.purchaseDate !== undefined) { fields.push('purchase_date'); values.push(updates.purchaseDate); }
+    if (updates.couponRate !== undefined) { fields.push('coupon_rate'); values.push(updates.couponRate); }
+    if (updates.couponFrequency !== undefined) { fields.push('coupon_frequency'); values.push(updates.couponFrequency); }
+    if (updates.maturityDate !== undefined) { fields.push('maturity_date'); values.push(updates.maturityDate); }
+    values.push(id, userId);
+    const sql = `UPDATE securities SET ${fields.map(f => `${f} = ?`).join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`;
+    db.prepare(sql).run(...values);
   }
 
   // Удалить ценную бумагу

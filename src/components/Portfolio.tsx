@@ -30,6 +30,17 @@ import { InvestorDashboard } from "./InvestorDashboard/InvestorDashboard";
 import { AllocationPanel } from "./InvestorDashboard/AllocationPanel";
 import { DividendCalendar } from "./InvestorDashboard/DividendCalendar";
 import { GoalsPanel } from "./InvestorDashboard/GoalsPanel";
+import { TransactionsPanel } from "./InvestorDashboard/TransactionsPanel";
+import { RiskProfilePanel } from "./InvestorDashboard/RiskProfilePanel";
+import { ScreenerPanel } from "./InvestorDashboard/ScreenerPanel";
+import { BondCouponsPanel } from "./InvestorDashboard/BondCouponsPanel";
+import { TaxesPanel } from "./InvestorDashboard/TaxesPanel";
+import { AlertsPanel } from "./InvestorDashboard/AlertsPanel";
+import { ImportCSVPanel } from "./InvestorDashboard/ImportCSVPanel";
+import { InvestDiaryPanel } from "./InvestorDashboard/InvestDiaryPanel";
+import { BenchmarksPanel } from "./InvestorDashboard/BenchmarksPanel";
+import { ReportsPanel } from "./InvestorDashboard/ReportsPanel";
+import { GamificationPanel } from "./InvestorDashboard/GamificationPanel";
 import type { AllocationTargets, Goal } from "../types/investor";
 import { DEFAULT_TARGETS, normalizeTargets } from "../utils/investor";
 import { loadJson, saveJson } from "../utils/storage";
@@ -47,7 +58,18 @@ type PortfolioTab =
   | "charts"
   | "allocation"
   | "dividends"
-  | "goals";
+  | "goals"
+  | "transactions"
+  | "risk"
+  | "screener"
+  | "bonds"
+  | "taxes"
+  | "alerts"
+  | "import"
+  | "diary"
+  | "benchmarks"
+  | "reports"
+  | "gamification";
 
 export const Portfolio: React.FC<PortfolioProps> = ({
   portfolio,
@@ -425,21 +447,42 @@ export const Portfolio: React.FC<PortfolioProps> = ({
 
   const storageKeyBase = `investor_v1_${user?.id ?? "anon"}`;
 
-  // Локальные настройки (цели/таргеты) под пользователя
+  // Цели: с backend при авторизации, иначе localStorage
   useEffect(() => {
-    const loadedGoals = loadJson<Goal[]>(`${storageKeyBase}_goals`, []);
+    if (user?.id) {
+      import("../services/api").then(({ extendedAPI }) => {
+        extendedAPI.goals.get().then((r: any) => {
+          if (Array.isArray(r) && r.length >= 0) {
+            setGoals(r.map((g: any) => ({
+              id: g.id,
+              name: g.name,
+              targetAmountRub: g.targetAmountRub,
+              currentAmountRub: g.currentAmountRub,
+              targetDate: g.targetDate,
+              monthlyContributionRub: g.monthlyContributionRub,
+              goalBasket: g.goalBasket,
+              assetIds: g.assetIds,
+            })));
+          }
+        }).catch(() => {});
+      });
+    } else {
+      const loadedGoals = loadJson<Goal[]>(`${storageKeyBase}_goals`, []);
+      setGoals(Array.isArray(loadedGoals) ? loadedGoals : []);
+    }
+  }, [user?.id]);
+
+  useEffect(() => {
     const loadedTargets = loadJson<AllocationTargets>(
       `${storageKeyBase}_targets`,
       DEFAULT_TARGETS
     );
-    setGoals(Array.isArray(loadedGoals) ? loadedGoals : []);
     setTargets(normalizeTargets(loadedTargets));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [storageKeyBase]);
 
   useEffect(() => {
-    saveJson(`${storageKeyBase}_goals`, goals);
-  }, [storageKeyBase, goals]);
+    if (!user?.id) saveJson(`${storageKeyBase}_goals`, goals);
+  }, [storageKeyBase, goals, user?.id]);
 
   useEffect(() => {
     saveJson(`${storageKeyBase}_targets`, targets);
@@ -531,6 +574,94 @@ export const Portfolio: React.FC<PortfolioProps> = ({
           >
             Цели
           </button>
+          <button
+            className={`investor-tab ${tab === "transactions" ? "active" : ""}`}
+            onClick={() => setTab("transactions")}
+            role="tab"
+            aria-selected={tab === "transactions"}
+          >
+            Сделки
+          </button>
+          <button
+            className={`investor-tab ${tab === "risk" ? "active" : ""}`}
+            onClick={() => setTab("risk")}
+            role="tab"
+            aria-selected={tab === "risk"}
+          >
+            Риск
+          </button>
+          <button
+            className={`investor-tab ${tab === "screener" ? "active" : ""}`}
+            onClick={() => setTab("screener")}
+            role="tab"
+            aria-selected={tab === "screener"}
+          >
+            Скринер
+          </button>
+          <button
+            className={`investor-tab ${tab === "bonds" ? "active" : ""}`}
+            onClick={() => setTab("bonds")}
+            role="tab"
+            aria-selected={tab === "bonds"}
+          >
+            Купоны
+          </button>
+          <button
+            className={`investor-tab ${tab === "taxes" ? "active" : ""}`}
+            onClick={() => setTab("taxes")}
+            role="tab"
+            aria-selected={tab === "taxes"}
+          >
+            Налоги
+          </button>
+          <button
+            className={`investor-tab ${tab === "alerts" ? "active" : ""}`}
+            onClick={() => setTab("alerts")}
+            role="tab"
+            aria-selected={tab === "alerts"}
+          >
+            Алерты
+          </button>
+          <button
+            className={`investor-tab ${tab === "import" ? "active" : ""}`}
+            onClick={() => setTab("import")}
+            role="tab"
+            aria-selected={tab === "import"}
+          >
+            Импорт
+          </button>
+          <button
+            className={`investor-tab ${tab === "diary" ? "active" : ""}`}
+            onClick={() => setTab("diary")}
+            role="tab"
+            aria-selected={tab === "diary"}
+          >
+            Дневник
+          </button>
+          <button
+            className={`investor-tab ${tab === "benchmarks" ? "active" : ""}`}
+            onClick={() => setTab("benchmarks")}
+            role="tab"
+            aria-selected={tab === "benchmarks"}
+          >
+            Бенчмарки
+          </button>
+          <button
+            className={`investor-tab ${tab === "reports" ? "active" : ""}`}
+            onClick={() => setTab("reports")}
+            role="tab"
+            aria-selected={tab === "reports"}
+          >
+            Отчёты
+          </button>
+          <button
+            className={`investor-tab ${tab === "gamification" ? "active" : ""}`}
+            onClick={() => setTab("gamification")}
+            role="tab"
+            aria-selected={tab === "gamification"}
+          >
+            Геймификация
+          </button>
         </div>
       </div>
 
@@ -559,7 +690,7 @@ export const Portfolio: React.FC<PortfolioProps> = ({
         </div>
       )}
 
-      {tab === "dashboard" && <InvestorDashboard portfolio={portfolio} rates={rates} />}
+      {tab === "dashboard" && <InvestorDashboard portfolio={portfolio} rates={rates} totalValue={totalValue} />}
 
       {tab === "allocation" && (
         <AllocationPanel
@@ -572,7 +703,19 @@ export const Portfolio: React.FC<PortfolioProps> = ({
 
       {tab === "dividends" && <DividendCalendar portfolio={portfolio} rates={rates} />}
 
-      {tab === "goals" && <GoalsPanel goals={goals} onChange={setGoals} />}
+      {tab === "goals" && <GoalsPanel goals={goals} onChange={setGoals} userId={user?.id} />}
+
+      {tab === "transactions" && <TransactionsPanel />}
+      {tab === "risk" && <RiskProfilePanel portfolio={portfolio} rates={rates} />}
+      {tab === "screener" && <ScreenerPanel portfolio={portfolio} rates={rates} targets={targets} />}
+      {tab === "bonds" && <BondCouponsPanel portfolio={portfolio} rates={rates} />}
+      {tab === "taxes" && <TaxesPanel portfolio={portfolio} rates={rates} />}
+      {tab === "alerts" && <AlertsPanel />}
+      {tab === "import" && <ImportCSVPanel />}
+      {tab === "diary" && <InvestDiaryPanel />}
+      {tab === "benchmarks" && <BenchmarksPanel portfolioValue={totalValue} />}
+      {tab === "reports" && <ReportsPanel portfolio={portfolio} rates={rates} />}
+      {tab === "gamification" && <GamificationPanel />}
 
       {tab === "charts" && (
         <PortfolioCharts portfolio={portfolio} exchangeRates={exchangeRates} />
