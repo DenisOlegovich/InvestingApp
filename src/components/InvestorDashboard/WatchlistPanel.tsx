@@ -31,7 +31,6 @@ export const WatchlistPanel: React.FC<{
       id: crypto.randomUUID(),
       ticker: t,
       targetPrice: targetPrice ? Number(targetPrice) : undefined,
-      thesis: note.trim() || undefined,
       note: note.trim() || undefined,
       createdAt: new Date().toISOString(),
     };
@@ -92,7 +91,7 @@ export const WatchlistPanel: React.FC<{
           <div key={item.id} className="list-item">
             <div className="left">
               <div className="title">{item.ticker}</div>
-              <div className="sub">{item.name || item.thesis || item.note || '—'}</div>
+              <div className="sub">{item.name || item.note || '—'}</div>
               {item.targetPrice != null && (
                 <div className="sub">Цель: {item.targetPrice.toLocaleString('ru-RU')}</div>
               )}

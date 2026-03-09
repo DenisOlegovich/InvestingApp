@@ -1,4 +1,9 @@
+<<<<<<< Current (Your changes)
 // API Client для работы с backend
+=======
+import type { Security, RealEstate, Deposit, Crypto, Portfolio, User, Transaction } from "../types";
+
+>>>>>>> Incoming (Background Agent changes)
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
 
 // Получить токен из localStorage
@@ -93,6 +98,32 @@ export const authAPI = {
   logout: () => {
     removeToken();
   },
+
+  forgotPassword: async (email: string) => {
+    const response = await fetch(`${API_URL}/auth/forgot-password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || "Ошибка запроса");
+    }
+    return response.json();
+  },
+
+  resetPassword: async (token: string, newPassword: string) => {
+    const response = await fetch(`${API_URL}/auth/reset-password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token, newPassword }),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || "Ошибка сброса пароля");
+    }
+    return response.json();
+  },
 };
 
 // Portfolio API
@@ -181,6 +212,25 @@ export const portfolioAPI = {
 
   deleteCryptocurrency: async (id: string) => {
     return fetchWithAuth(`/portfolio/cryptocurrencies/${id}`, {
+      method: "DELETE",
+    });
+  },
+
+  // Transactions (история сделок)
+  getTransactions: async (): Promise<Transaction[]> => {
+    return fetchWithAuth<Transaction[]>("/portfolio/transactions");
+  },
+
+  addTransaction: async (tx: Omit<Transaction, "id" | "createdAt">) => {
+    const res = await fetchWithAuth<{ id: string }>("/portfolio/transactions", {
+      method: "POST",
+      body: JSON.stringify(tx),
+    });
+    return res;
+  },
+
+  deleteTransaction: async (id: string) => {
+    return fetchWithAuth(`/portfolio/transactions/${id}`, {
       method: "DELETE",
     });
   },

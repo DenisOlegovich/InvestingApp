@@ -5,9 +5,14 @@ import './AuthForms.css';
 interface LoginFormProps {
   onSuccess: () => void;
   onSwitchToRegister: () => void;
+  onSwitchToForgotPassword?: () => void;
 }
 
-export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onSwitchToRegister }) => {
+export const LoginForm: React.FC<LoginFormProps> = ({
+  onSuccess,
+  onSwitchToRegister,
+  onSwitchToForgotPassword,
+}) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -72,6 +77,13 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onSwitchToRegis
           </button>
         </form>
 
+        {onSwitchToForgotPassword && (
+          <div className="auth-switch">
+            <button type="button" onClick={onSwitchToForgotPassword}>
+              Забыли пароль?
+            </button>
+          </div>
+        )}
         <div className="auth-switch">
           <span>Нет аккаунта? </span>
           <button onClick={onSwitchToRegister}>Зарегистрироваться</button>

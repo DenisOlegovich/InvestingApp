@@ -54,4 +54,17 @@ npm run dev
 
 Все данные привязаны к вашему аккаунту и защищены!
 
+<<<<<<< Current (Your changes)
+=======
+---
+
+## ⚠️ Ошибка "Apply worktree... EACCES: permission denied, mkdir '/Users/Desktop'"
+
+В терминале выполните:
+
+```bash
+sudo ln -s /Users/denis/Desktop /Users/Desktop
+```
+
+>>>>>>> Incoming (Background Agent changes)
 

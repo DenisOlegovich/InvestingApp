@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useId } from 'react';
 import './LineChart.css';
 
 export interface LineChartPoint {
@@ -64,6 +64,8 @@ export const LineChart: React.FC<LineChartProps> = ({
   const isPositive = lastVal >= firstVal;
   const lineColor = isPositive ? positiveColor : negativeColor;
 
+  const gradientId = `line-chart-grad-${useId().replace(/:/g, '-')}`;
+
   const formatTime = (iso: string) => {
     const d = new Date(iso);
     return d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
@@ -79,14 +81,14 @@ export const LineChart: React.FC<LineChartProps> = ({
     <div className="line-chart-container">
       <h3 className="line-chart-title">{title}</h3>
       <div className="line-chart-content">
-        <svg viewBox={`0 0 ${w} ${height}`} className="line-chart-svg" preserveAspectRatio="xMidYMid meet">
+        <svg viewBox={`0 0 ${w} ${height}`} className="line-chart-svg" preserveAspectRatio="xMidYMid meet" style={{ height: `${height}px` }}>
           <defs>
-            <linearGradient id="lineChartGrad" x1="0" y1="0" x2="0" y2="1">
+            <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor={lineColor} stopOpacity="0.25" />
               <stop offset="100%" stopColor={lineColor} stopOpacity="0" />
             </linearGradient>
           </defs>
-          <path d={areaD} fill="url(#lineChartGrad)" />
+          <path d={areaD} fill={`url(#${gradientId})`} />
           <path d={pathD} fill="none" stroke={lineColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           {data.map((d, i) => (
             <circle

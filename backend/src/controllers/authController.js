@@ -1,6 +1,10 @@
+import crypto from 'crypto';
 import User from '../models/User.js';
 import { generateToken } from '../middleware/auth.js';
 import { validationResult } from 'express-validator';
+
+// In-memory store for password reset tokens (email -> { token, expires })
+const resetTokens = new Map();
 
 export const register = async (req, res) => {
   try {
@@ -95,6 +99,66 @@ export const getMe = (req, res) => {
   } catch (error) {
     console.error('Ошибка получения профиля:', error);
     res.status(500).json({ error: 'Ошибка при получении профиля' });
+  }
+};
+
+export const forgotPassword = async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { email } = req.body;
+    const user = User.findByEmail(email);
+    if (!user) {
+      return res.json({ message: 'Если email существует, на него отправлена ссылка для сброса пароля' });
+    }
+
+    const token = crypto.randomBytes(32).toString('hex');
+    const expires = Date.now() + 60 * 60 * 1000; // 1 hour
+    resetTokens.set(email, { token, expires });
+
+    // В продакшене — отправить email. Для разработки возвращаем токен в ответе
+    const resetLink = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password?token=${token}`;
+    res.json({
+      message: 'Если email существует, на него отправлена ссылка для сброса пароля',
+      resetToken: process.env.NODE_ENV !== 'production' ? token : undefined,
+      resetLink: process.env.NODE_ENV !== 'production' ? resetLink : undefined,
+    });
+  } catch (error) {
+    console.error('Ошибка forgot-password:', error);
+    res.status(500).json({ error: 'Ошибка при запросе сброса пароля' });
+  }
+};
+
+export const resetPassword = async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { token, newPassword } = req.body;
+
+    let foundEmail = null;
+    for (const [email, data] of resetTokens.entries()) {
+      if (data.token === token && data.expires > Date.now()) {
+        foundEmail = email;
+        resetTokens.delete(email);
+        break;
+      }
+    }
+
+    if (!foundEmail) {
+      return res.status(400).json({ error: 'Недействительная или просроченная ссылка сброса пароля' });
+    }
+
+    await User.updatePassword(foundEmail, newPassword);
+    res.json({ message: 'Пароль успешно изменён. Можете войти с новым паролем.' });
+  } catch (error) {
+    console.error('Ошибка reset-password:', error);
+    res.status(500).json({ error: 'Ошибка при сбросе пароля' });
   }
 };
 
