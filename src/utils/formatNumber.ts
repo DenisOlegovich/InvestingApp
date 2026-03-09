@@ -32,9 +32,6 @@ export const parseFormattedNumber = (value: string): string => {
   return value.replace(/\s/g, '');
 };
 
-export const formatCurrencyRub = (value: number): string =>
-  value.toLocaleString('ru-RU', { maximumFractionDigits: 0 }) + ' ₽';
-
 // Обработчик изменения для input с форматированием
 export const handleNumberInputChange = (
   value: string,
