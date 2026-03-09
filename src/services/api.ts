@@ -1,4 +1,12 @@
-import type { Security, RealEstate, Deposit, Crypto, Portfolio, User } from "../types";
+import type {
+  Security,
+  RealEstate,
+  Deposit,
+  Crypto,
+  Portfolio,
+  User,
+  Transaction,
+} from "../types";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
 
@@ -15,7 +23,10 @@ export const removeToken = (): void => {
 /** Событие при 401 — приложение может подписаться и переключиться на экран входа */
 export const AUTH_UNAUTHORIZED_EVENT = "auth:unauthorized";
 
-const fetchWithAuth = async <T>(url: string, options: RequestInit = {}): Promise<T> => {
+const fetchWithAuth = async <T>(
+  url: string,
+  options: RequestInit = {},
+): Promise<T> => {
   const token = getToken();
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -32,7 +43,9 @@ const fetchWithAuth = async <T>(url: string, options: RequestInit = {}): Promise
   }
 
   if (!response.ok) {
-    const body = await response.json().catch(() => ({ error: "Неизвестная ошибка" }));
+    const body = await response
+      .json()
+      .catch(() => ({ error: "Неизвестная ошибка" }));
     throw new Error(body.error || "Ошибка запроса");
   }
 
@@ -81,6 +94,32 @@ export const authAPI = {
 
   logout: () => {
     removeToken();
+  },
+
+  forgotPassword: async (email: string) => {
+    const response = await fetch(`${API_URL}/auth/forgot-password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || "Ошибка запроса");
+    }
+    return response.json();
+  },
+
+  resetPassword: async (token: string, newPassword: string) => {
+    const response = await fetch(`${API_URL}/auth/reset-password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token, newPassword }),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || "Ошибка сброса пароля");
+    }
+    return response.json();
   },
 };
 
@@ -169,6 +208,23 @@ export const portfolioAPI = {
 
   deleteCryptocurrency: async (id: string) => {
     return fetchWithAuth(`/portfolio/cryptocurrencies/${id}`, {
+      method: "DELETE",
+    });
+  },
+
+  getTransactions: async (): Promise<Transaction[]> => {
+    return fetchWithAuth<Transaction[]>("/portfolio/transactions");
+  },
+
+  addTransaction: async (tx: Omit<Transaction, "id" | "createdAt">) => {
+    return fetchWithAuth<{ id: string }>("/portfolio/transactions", {
+      method: "POST",
+      body: JSON.stringify(tx),
+    });
+  },
+
+  deleteTransaction: async (id: string) => {
+    return fetchWithAuth(`/portfolio/transactions/${id}`, {
       method: "DELETE",
     });
   },

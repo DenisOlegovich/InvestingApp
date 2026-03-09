@@ -34,6 +34,9 @@ import { GoalsPanel } from "./InvestorDashboard/GoalsPanel";
 import { WatchlistPanel } from "./InvestorDashboard/WatchlistPanel";
 import { NotesPanel } from "./InvestorDashboard/NotesPanel";
 import { ChecklistPanel } from "./InvestorDashboard/ChecklistPanel";
+import { ToolsPanel } from "./InvestorDashboard/ToolsPanel";
+import { TransactionsPanel } from "./InvestorDashboard/TransactionsPanel";
+import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
 import { DCAPanel } from "./InvestorDashboard/DCAPanel";
 import { ScenariosPanel } from "./InvestorDashboard/ScenariosPanel";
 import { useTheme } from "../contexts/ThemeContext";
@@ -60,7 +63,9 @@ type PortfolioTab =
   | "dca"
   | "scenarios"
   | "checklist"
-  | "notes";
+  | "notes"
+  | "tools"
+  | "transactions";
 
 export const Portfolio: React.FC<PortfolioProps> = ({
   portfolio,
@@ -80,6 +85,21 @@ export const Portfolio: React.FC<PortfolioProps> = ({
   const [goals, setGoals] = useState<Goal[]>([]);
   const [targets, setTargets] = useState<AllocationTargets>(DEFAULT_TARGETS);
   const { theme, setTheme } = useTheme();
+
+  useKeyboardShortcuts({
+    "Ctrl+1": () => setTab("dashboard"),
+    "Meta+1": () => setTab("dashboard"),
+    "Ctrl+2": () => setTab("assets"),
+    "Meta+2": () => setTab("assets"),
+    "Ctrl+3": () => setTab("charts"),
+    "Meta+3": () => setTab("charts"),
+    "Ctrl+4": () => setTab("allocation"),
+    "Meta+4": () => setTab("allocation"),
+    "Ctrl+5": () => setTab("transactions"),
+    "Meta+5": () => setTab("transactions"),
+    "Ctrl+0": () => setTab("tools"),
+    "Meta+0": () => setTab("tools"),
+  });
 
   const handleAddSecurity = async (securityData: Omit<Security, "id">) => {
     try {
@@ -600,6 +620,22 @@ export const Portfolio: React.FC<PortfolioProps> = ({
           >
             Заметки
           </button>
+          <button
+            className={`investor-tab ${tab === "tools" ? "active" : ""}`}
+            onClick={() => setTab("tools")}
+            role="tab"
+            aria-selected={tab === "tools"}
+          >
+            Инструменты
+          </button>
+          <button
+            className={`investor-tab ${tab === "transactions" ? "active" : ""}`}
+            onClick={() => setTab("transactions")}
+            role="tab"
+            aria-selected={tab === "transactions"}
+          >
+            Сделки
+          </button>
         </div>
       </div>
 
@@ -658,6 +694,35 @@ export const Portfolio: React.FC<PortfolioProps> = ({
       {tab === "checklist" && <ChecklistPanel userId={user?.id} />}
 
       {tab === "notes" && <NotesPanel userId={user?.id} />}
+
+      {tab === "tools" && (
+        <ToolsPanel
+          portfolio={portfolio}
+          userName={user?.name ?? ""}
+          onImportSecurities={async (securities) => {
+            const added: Security[] = [];
+            for (const s of securities) {
+              try {
+                const res = await portfolioAPI.addSecurity(s);
+                added.push({ ...s, id: res.id });
+              } catch (e) {
+                console.error("Import error:", e);
+              }
+            }
+            if (added.length > 0) {
+              onUpdatePortfolio({
+                ...portfolio,
+                securities: [...portfolio.securities, ...added],
+              });
+            }
+          }}
+          onRestoreBackup={(restored) => onUpdatePortfolio(restored)}
+        />
+      )}
+
+      {tab === "transactions" && (
+        <TransactionsPanel securities={portfolio.securities} />
+      )}
 
       {tab === "charts" && (
         <PortfolioCharts portfolio={portfolio} exchangeRates={exchangeRates} />

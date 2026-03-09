@@ -2,20 +2,20 @@ export interface Security {
   id: string;
   name: string;
   ticker: string;
-  type: 'stock' | 'bond' | 'etf';
+  type: "stock" | "bond" | "etf";
   currentPrice: number;
   previousPrice: number;
   quantity: number;
   expectedDividend: number; // в процентах годовых
-  dividendFrequency: 'monthly' | 'quarterly' | 'yearly';
-  currency: 'RUB' | 'USD' | 'EUR'; // Валюта цены
+  dividendFrequency: "monthly" | "quarterly" | "yearly";
+  currency: "RUB" | "USD" | "EUR"; // Валюта цены
 }
 
 export interface RealEstate {
   id: string;
   name: string;
   location: string;
-  type: 'apartment' | 'house' | 'commercial';
+  type: "apartment" | "house" | "commercial";
   currentValue: number;
   purchasePrice?: number; // Опционально
   purchaseDate?: string; // Опционально
@@ -29,11 +29,11 @@ export interface Deposit {
   bank: string;
   amount: number; // Сумма депозита
   interestRate: number; // Процентная ставка годовых
-  currency: 'RUB' | 'USD' | 'EUR';
+  currency: "RUB" | "USD" | "EUR";
   openingDate?: string; // Дата открытия (опционально)
   maturityDate?: string; // Дата окончания (опционально, для срочных депозитов)
-  capitalization: 'monthly' | 'quarterly' | 'yearly' | 'none'; // Капитализация процентов
-  type: 'demand' | 'term'; // До востребования или срочный
+  capitalization: "monthly" | "quarterly" | "yearly" | "none"; // Капитализация процентов
+  type: "demand" | "term"; // До востребования или срочный
 }
 
 export interface Crypto {
@@ -72,3 +72,16 @@ export interface User {
   created_at?: string;
 }
 
+export interface Transaction {
+  id: string;
+  securityId?: string | null;
+  ticker: string;
+  name: string;
+  type: 'buy' | 'sell';
+  quantity: number;
+  pricePerUnit: number;
+  total: number;
+  currency: 'RUB' | 'USD' | 'EUR';
+  tradeDate: string;
+  createdAt?: string;
+}

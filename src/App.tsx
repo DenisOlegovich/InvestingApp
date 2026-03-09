@@ -2,11 +2,13 @@ import { useState, useEffect, useCallback } from 'react';
 import { Portfolio } from './components/Portfolio';
 import { LoginForm } from './components/Auth/LoginForm';
 import { RegisterForm } from './components/Auth/RegisterForm';
+import { ForgotPasswordForm } from './components/Auth/ForgotPasswordForm';
+import { ResetPasswordForm } from './components/Auth/ResetPasswordForm';
 import { Portfolio as PortfolioType, User, EMPTY_PORTFOLIO } from './types';
 import { authAPI, portfolioAPI, AUTH_UNAUTHORIZED_EVENT } from './services/api';
 import './App.css';
 
-type AuthView = 'login' | 'register' | 'portfolio';
+type AuthView = 'login' | 'register' | 'forgot-password' | 'reset-password' | 'portfolio';
 
 async function loadUserAndPortfolio(): Promise<{ user: User; portfolio: PortfolioType }> {
   const [userData, portfolioData] = await Promise.all([
@@ -18,6 +20,7 @@ async function loadUserAndPortfolio(): Promise<{ user: User; portfolio: Portfoli
 
 function App() {
   const [authView, setAuthView] = useState<AuthView>('login');
+  const [resetToken, setResetToken] = useState<string>('');
   const [portfolio, setPortfolio] = useState<PortfolioType>(EMPTY_PORTFOLIO);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -34,6 +37,16 @@ function App() {
   }, []);
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const urlToken = params.get('token');
+    if (urlToken && (window.location.pathname.includes('reset-password') || params.has('token'))) {
+      setResetToken(urlToken);
+      setAuthView('reset-password');
+      window.history.replaceState({}, '', window.location.pathname);
+      setLoading(false);
+      return;
+    }
+
     const checkAuth = async () => {
       const token = localStorage.getItem('authToken');
       if (token) {
@@ -83,12 +96,43 @@ function App() {
   return (
     <div className="app">
       {authView === 'login' && (
-        <LoginForm 
+        <LoginForm
           onSuccess={handleAuthSuccess}
           onSwitchToRegister={() => setAuthView('register')}
+          onSwitchToForgotPassword={() => setAuthView('forgot-password')}
         />
       )}
-      
+
+      {authView === 'forgot-password' && (
+        <ForgotPasswordForm
+          onSuccess={(msg, token) => {
+            if (token) {
+              setResetToken(token);
+              setAuthView('reset-password');
+            } else {
+              alert(msg);
+              setAuthView('login');
+            }
+          }}
+          onSwitchToLogin={() => setAuthView('login')}
+        />
+      )}
+
+      {authView === 'reset-password' && resetToken && (
+        <ResetPasswordForm
+          token={resetToken}
+          onSuccess={() => {
+            setResetToken('');
+            setAuthView('login');
+            alert('Пароль успешно изменён');
+          }}
+          onSwitchToLogin={() => {
+            setResetToken('');
+            setAuthView('login');
+          }}
+        />
+      )}
+
       {authView === 'register' && (
         <RegisterForm 
           onSuccess={handleAuthSuccess}
