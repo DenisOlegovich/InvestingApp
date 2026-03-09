@@ -7,10 +7,7 @@ import {
   portfolioValueByAssetClassRub,
   totalFromMap,
 } from '../../utils/investor';
-
-function fmtRub(n: number): string {
-  return n.toLocaleString('ru-RU', { maximumFractionDigits: 0 }) + ' ₽';
-}
+import { formatCurrencyRub } from '../../utils/formatNumber';
 
 const LABELS: Record<AssetClass, string> = {
   securities: 'Ценные бумаги',
@@ -68,7 +65,7 @@ export const AllocationPanel: React.FC<{
               <div className="pct">{currentPct[k].toFixed(1)}%</div>
             </div>
           ))}
-          <div className="muted">Итого: {fmtRub(total)}</div>
+          <div className="muted">Итого: {formatCurrencyRub(total)}</div>
         </div>
 
         <div className="panel" style={{ padding: 14 }}>
@@ -121,7 +118,7 @@ export const AllocationPanel: React.FC<{
               const headline =
                 action === 'держать'
                   ? `${LABELS[k]} — ок`
-                  : `${LABELS[k]} — ${action} ≈ ${fmtRub(abs)}`;
+                  : `${LABELS[k]} — ${action} ≈ ${formatCurrencyRub(abs)}`;
               return (
                 <div key={k} className="list-item">
                   <div className="left">
@@ -131,7 +128,7 @@ export const AllocationPanel: React.FC<{
                       {diffPct.toFixed(1)} п.п.)
                     </div>
                   </div>
-                  <div className="right">{fmtRub(values[k])}</div>
+                  <div className="right">{formatCurrencyRub(values[k])}</div>
                 </div>
               );
             })}

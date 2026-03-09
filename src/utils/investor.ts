@@ -2,6 +2,8 @@ import { Portfolio, Security } from '../types';
 import { ExchangeRates, convertToRUB } from '../services/currencyApi';
 import {
   calculateDepositCurrentValue,
+  calculateDepositMonthlyIncome,
+  calculateCryptoMonthlyIncome,
   calculatePriceChange,
   calculatePriceChangePercent,
   calculateRealEstateRental,
@@ -179,5 +181,43 @@ export function estimateDividendEventsNext12m(
 export function estimateRentalIncomeMonthlyRub(portfolio: Portfolio): number {
   const annual = portfolio.realEstate.reduce((sum, r) => sum + calculateRealEstateRental(r), 0);
   return annual / 12;
+}
+
+export type MonthlyIncomeData = { monthKey: string; total: number; dividends: number; other: number };
+
+export function estimateMonthlyIncomeNext12m(
+  portfolio: Portfolio,
+  rates: ExchangeRates,
+  now = new Date()
+): MonthlyIncomeData[] {
+  const dividendEvents = estimateDividendEventsNext12m(portfolio.securities, rates, now);
+  const rentalMonthly = portfolio.realEstate.reduce(
+    (s, r) => s + calculateRealEstateRental(r) / 12,
+    0
+  );
+  const interestMonthly = portfolio.deposits.reduce(
+    (s, d) => s + convertToRUB(calculateDepositMonthlyIncome(d), d.currency, rates),
+    0
+  );
+  const stakingMonthly = portfolio.cryptocurrencies.reduce(
+    (s, c) => s + convertToRUB(calculateCryptoMonthlyIncome(c), 'USD', rates),
+    0
+  );
+  const otherMonthly = rentalMonthly + interestMonthly + stakingMonthly;
+
+  const dividendByMonth = new Map<string, number>();
+  for (const e of dividendEvents) {
+    dividendByMonth.set(e.monthKey, (dividendByMonth.get(e.monthKey) || 0) + e.amountInRub);
+  }
+
+  const result: MonthlyIncomeData[] = [];
+  for (let i = 0; i < 12; i++) {
+    const month = addMonths(now, i);
+    const monthKey = toMonthKey(month);
+    const dividends = dividendByMonth.get(monthKey) || 0;
+    const total = dividends + otherMonthly;
+    result.push({ monthKey, total, dividends, other: otherMonthly });
+  }
+  return result;
 }
 

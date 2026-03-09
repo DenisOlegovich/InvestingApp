@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 import { initDatabase } from './config/database.js';
 import authRoutes from './routes/auth.js';
 import portfolioRoutes from './routes/portfolio.js';
-import extendedRoutes from './routes/extended.js';
+import stocksRoutes from './routes/stocks.js';
 
 // Загрузка переменных окружения
 dotenv.config();
@@ -48,7 +48,7 @@ app.get('/api/health', (req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/portfolio', portfolioRoutes);
-app.use('/api/extended', extendedRoutes);
+app.use('/api/stocks', stocksRoutes);
 
 // Обработка 404
 app.use((req, res) => {

@@ -9,12 +9,6 @@ export interface Security {
   expectedDividend: number; // в процентах годовых
   dividendFrequency: 'monthly' | 'quarterly' | 'yearly';
   currency: 'RUB' | 'USD' | 'EUR'; // Валюта цены
-  sector?: string;
-  country?: string;
-  purchaseDate?: string;
-  couponRate?: number;
-  couponFrequency?: string;
-  maturityDate?: string;
 }
 
 export interface RealEstate {
@@ -61,6 +55,14 @@ export interface Portfolio {
   cryptocurrencies: Crypto[];
 }
 
+/** Пустой портфель (начальное состояние) */
+export const EMPTY_PORTFOLIO: Portfolio = {
+  securities: [],
+  realEstate: [],
+  deposits: [],
+  cryptocurrencies: [],
+};
+
 export type PortfolioItem = Security | RealEstate | Deposit | Crypto;
 
 export interface User {
@@ -68,19 +70,5 @@ export interface User {
   email: string;
   name: string;
   created_at?: string;
-}
-
-export interface Transaction {
-  id: string;
-  securityId?: string | null;
-  ticker: string;
-  name: string;
-  type: 'buy' | 'sell';
-  quantity: number;
-  pricePerUnit: number;
-  total: number;
-  currency: 'RUB' | 'USD' | 'EUR';
-  tradeDate: string;
-  createdAt?: string;
 }
 

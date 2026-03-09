@@ -10,8 +10,6 @@ export interface StockQuote {
   currency: 'RUB' | 'USD' | 'EUR'; // Валюта цены
 }
 
-<<<<<<< Current (Your changes)
-=======
 export interface SearchQuote {
   symbol: string;
   shortname: string;
@@ -95,20 +93,20 @@ function getSearchQuery(query: string): string[] {
 }
 
 function parseQuotes(data: { quotes?: unknown[] }): SearchQuote[] {
-  const raw = (data?.quotes || []) as Array<{ quoteType?: string; symbol?: string; shortname?: string; longname?: string; exchange?: string; typeDisp?: string }>;
+  const raw = data?.quotes || [];
   return raw
-    .filter((item) => {
+    .filter((item: { quoteType?: string }) => {
       const t = item.quoteType || '';
       if (t === 'CRYPTOCURRENCY') return false;
       return ['EQUITY', 'ETF', 'FUND'].includes(t) || !t;
     })
-    .map((item) => ({
-      symbol: item.symbol || '',
-      shortname: item.shortname || item.longname || '',
-      longname: item.longname || item.shortname || '',
-      exchange: item.exchange || '',
-      typeDisp: item.typeDisp || '',
-      quoteType: item.quoteType || '',
+    .map((item: Record<string, unknown>) => ({
+      symbol: (item.symbol as string) || '',
+      shortname: (item.shortname as string) || (item.longname as string) || '',
+      longname: (item.longname as string) || (item.shortname as string),
+      exchange: (item.exchange as string) || '',
+      typeDisp: (item.typeDisp as string) || '',
+      quoteType: (item.quoteType as string) || '',
     }))
     .filter((item: SearchQuote) => Boolean(item.symbol));
 }
@@ -178,7 +176,6 @@ export async function searchTickers(query: string): Promise<SearchQuote[]> {
   return allQuotes;
 }
 
->>>>>>> Incoming (Background Agent changes)
 /**
  * Получает данные о ценной бумаге по тикеру
  * Использует публичные API для получения актуальных данных
@@ -223,7 +220,9 @@ export async function fetchStockData(ticker: string): Promise<StockQuote | null>
       if (yahooData) {
         return yahooData;
       }
-    } catch {}
+    } catch (e) {
+      console.log('Yahoo Finance API недоступен:', e);
+    }
 
     // 2. Пробуем Alpha Vantage альтернативный источник
     try {
@@ -231,7 +230,9 @@ export async function fetchStockData(ticker: string): Promise<StockQuote | null>
       if (alphaData) {
         return alphaData;
       }
-    } catch {}
+    } catch (e) {
+      console.log('Alpha Vantage API недоступен:', e);
+    }
 
     // 3. Пробуем Finnhub API (бесплатный лимит)
     try {
@@ -239,7 +240,9 @@ export async function fetchStockData(ticker: string): Promise<StockQuote | null>
       if (finnhubData) {
         return finnhubData;
       }
-    } catch {}
+    } catch (e) {
+      console.log('Finnhub API недоступен:', e);
+    }
   }
 
   // Для AAPL - специальная обработка с реальной ценой как fallback
@@ -274,7 +277,9 @@ export async function fetchStockData(ticker: string): Promise<StockQuote | null>
           }
         }
       }
-    } catch {}
+    } catch (e) {
+      console.log('Альтернативный метод для AAPL не сработал');
+    }
   }
 
   // Только для известных тикеров используем моки как fallback

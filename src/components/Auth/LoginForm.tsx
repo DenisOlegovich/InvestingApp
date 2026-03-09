@@ -26,8 +26,8 @@ export const LoginForm: React.FC<LoginFormProps> = ({
     try {
       await authAPI.login(email, password);
       onSuccess();
-    } catch (err: any) {
-      setError(err.message || 'Ошибка входа');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Ошибка входа');
     } finally {
       setLoading(false);
     }

@@ -78,7 +78,7 @@ export const login = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Ошибка входа:', error);
+    console.error('Ошибка входа:', error?.message || error);
     res.status(500).json({ error: 'Ошибка при входе' });
   }
 };

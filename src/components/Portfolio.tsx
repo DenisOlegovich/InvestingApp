@@ -36,10 +36,7 @@ import { NotesPanel } from "./InvestorDashboard/NotesPanel";
 import { ChecklistPanel } from "./InvestorDashboard/ChecklistPanel";
 import { DCAPanel } from "./InvestorDashboard/DCAPanel";
 import { ScenariosPanel } from "./InvestorDashboard/ScenariosPanel";
-import { ToolsPanel } from "./InvestorDashboard/ToolsPanel";
-import { TransactionsPanel } from "./InvestorDashboard/TransactionsPanel";
 import { useTheme } from "../contexts/ThemeContext";
-import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
 import type { AllocationTargets, Goal } from "../types/investor";
 import { DEFAULT_TARGETS, normalizeTargets } from "../utils/investor";
 import { loadJson, saveJson } from "../utils/storage";
@@ -63,9 +60,7 @@ type PortfolioTab =
   | "dca"
   | "scenarios"
   | "checklist"
-  | "notes"
-  | "tools"
-  | "transactions";
+  | "notes";
 
 export const Portfolio: React.FC<PortfolioProps> = ({
   portfolio,
@@ -83,21 +78,6 @@ export const Portfolio: React.FC<PortfolioProps> = ({
   const hasInitialLoad = useRef(false);
   const [tab, setTab] = useState<PortfolioTab>("dashboard");
   const [goals, setGoals] = useState<Goal[]>([]);
-
-  useKeyboardShortcuts({
-    "Ctrl+1": () => setTab("dashboard"),
-    "Meta+1": () => setTab("dashboard"),
-    "Ctrl+2": () => setTab("assets"),
-    "Meta+2": () => setTab("assets"),
-    "Ctrl+3": () => setTab("charts"),
-    "Meta+3": () => setTab("charts"),
-    "Ctrl+4": () => setTab("allocation"),
-    "Meta+4": () => setTab("allocation"),
-    "Ctrl+0": () => setTab("tools"),
-    "Meta+0": () => setTab("tools"),
-    "Ctrl+5": () => setTab("transactions"),
-    "Meta+5": () => setTab("transactions"),
-  });
   const [targets, setTargets] = useState<AllocationTargets>(DEFAULT_TARGETS);
   const { theme, setTheme } = useTheme();
 
@@ -620,22 +600,6 @@ export const Portfolio: React.FC<PortfolioProps> = ({
           >
             Заметки
           </button>
-          <button
-            className={`investor-tab ${tab === "tools" ? "active" : ""}`}
-            onClick={() => setTab("tools")}
-            role="tab"
-            aria-selected={tab === "tools"}
-          >
-            Инструменты
-          </button>
-          <button
-            className={`investor-tab ${tab === "transactions" ? "active" : ""}`}
-            onClick={() => setTab("transactions")}
-            role="tab"
-            aria-selected={tab === "transactions"}
-          >
-            Сделки
-          </button>
         </div>
       </div>
 
@@ -694,105 +658,6 @@ export const Portfolio: React.FC<PortfolioProps> = ({
       {tab === "checklist" && <ChecklistPanel userId={user?.id} />}
 
       {tab === "notes" && <NotesPanel userId={user?.id} />}
-
-      {tab === "tools" && (
-        <ToolsPanel
-          portfolio={portfolio}
-          userName={user?.name ?? ""}
-          onRestoreBackup={async (backup) => {
-            try {
-              for (const s of portfolio.securities) {
-                await portfolioAPI.deleteSecurity(s.id);
-              }
-              for (const d of portfolio.deposits) {
-                await portfolioAPI.deleteDeposit(d.id);
-              }
-              for (const c of portfolio.cryptocurrencies) {
-                await portfolioAPI.deleteCryptocurrency(c.id);
-              }
-              for (const r of portfolio.realEstate) {
-                await portfolioAPI.deleteRealEstate(r.id);
-              }
-              const added: PortfolioType = {
-                securities: [],
-                realEstate: [],
-                deposits: [],
-                cryptocurrencies: [],
-              };
-              for (const s of backup.securities || []) {
-                const res = await portfolioAPI.addSecurity({
-                  name: s.name,
-                  ticker: s.ticker,
-                  type: s.type,
-                  currentPrice: s.currentPrice,
-                  previousPrice: s.previousPrice ?? s.currentPrice,
-                  quantity: s.quantity,
-                  expectedDividend: s.expectedDividend ?? 0,
-                  dividendFrequency: s.dividendFrequency ?? 'yearly',
-                  currency: s.currency,
-                });
-                added.securities.push({ ...s, id: res.id });
-              }
-              for (const d of backup.deposits || []) {
-                const res = await portfolioAPI.addDeposit({
-                  name: d.name,
-                  bank: d.bank,
-                  amount: d.amount,
-                  interestRate: d.interestRate,
-                  currency: d.currency,
-                  capitalization: d.capitalization,
-                  type: d.type,
-                });
-                added.deposits.push({ ...d, id: res.id });
-              }
-              for (const c of backup.cryptocurrencies || []) {
-                const res = await portfolioAPI.addCryptocurrency({
-                  symbol: c.symbol,
-                  name: c.name,
-                  amount: c.amount,
-                  currentPrice: c.currentPrice,
-                  previousPrice: c.previousPrice ?? c.currentPrice,
-                });
-                added.cryptocurrencies.push({ ...c, id: res.id });
-              }
-              for (const r of backup.realEstate || []) {
-                const res = await portfolioAPI.addRealEstate({
-                  name: r.name,
-                  location: r.location,
-                  type: r.type,
-                  currentValue: r.currentValue,
-                });
-                added.realEstate.push({ ...r, id: res.id });
-              }
-              onUpdatePortfolio(added);
-            } catch (e) {
-              console.error('Ошибка восстановления:', e);
-              alert('Ошибка при восстановлении из бэкапа');
-            }
-          }}
-          onImportSecurities={async (securities) => {
-            const added: Security[] = [];
-            for (const s of securities) {
-              try {
-                const res = await portfolioAPI.addSecurity(s);
-                added.push({ ...s, id: res.id });
-              } catch (e) {
-                console.error("Import error:", e);
-              }
-            }
-            if (added.length > 0) {
-              onUpdatePortfolio({
-                ...portfolio,
-                securities: [...portfolio.securities, ...added],
-              });
-            }
-          }}
-        />
-      )}
-
-      {tab === "transactions" && (
-        <TransactionsPanel securities={portfolio.securities} />
-      )}
 
       {tab === "charts" && (
         <PortfolioCharts portfolio={portfolio} exchangeRates={exchangeRates} />

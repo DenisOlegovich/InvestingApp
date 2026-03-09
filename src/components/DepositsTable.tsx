@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Deposit } from '../types';
 import { calculateDepositMonthlyIncome, calculateDepositCurrentValue } from '../utils/calculations';
+import { ConfirmDialog } from './ConfirmDialog';
 import './DepositsTable.css';
 
 interface DepositsTableProps {
@@ -12,14 +13,20 @@ interface DepositsTableProps {
 export const DepositsTable: React.FC<DepositsTableProps> = ({ deposits, onRemove, onUpdateAmount }) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<string>('');
+  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string } | null>(null);
 
   if (deposits.length === 0) {
     return null;
   }
 
-  const handleRemove = (id: string, name: string) => {
-    if (window.confirm(`Вы уверены, что хотите удалить "${name}"?`)) {
-      onRemove(id);
+  const handleRemoveClick = (id: string, name: string) => {
+    setDeleteConfirm({ id, name });
+  };
+
+  const handleConfirmRemove = () => {
+    if (deleteConfirm) {
+      onRemove(deleteConfirm.id);
+      setDeleteConfirm(null);
     }
   };
 
@@ -149,19 +156,23 @@ export const DepositsTable: React.FC<DepositsTableProps> = ({ deposits, onRemove
                         onClick={() => handleStartEdit(deposit.id, deposit.amount)}
                         title="Нажмите для редактирования"
                       >
-                        {deposit.amount.toLocaleString('ru-RU', { 
-                          minimumFractionDigits: 2, 
-                          maximumFractionDigits: 2 
-                        })} {currencySymbol}
+                        <span className="amount-with-currency">
+                          {deposit.amount.toLocaleString('ru-RU', { 
+                            minimumFractionDigits: 2, 
+                            maximumFractionDigits: 2 
+                          })}{' '}{currencySymbol}
+                        </span>
                         <span className="edit-icon">✎</span>
                       </div>
                     )}
                   </td>
                   <td className="value-cell" data-label="Текущая стоимость">
-                    {currentValue.toLocaleString('ru-RU', { 
-                      minimumFractionDigits: 2, 
-                      maximumFractionDigits: 2 
-                    })} {currencySymbol}
+                    <span className="amount-with-currency">
+                      {currentValue.toLocaleString('ru-RU', { 
+                        minimumFractionDigits: 2, 
+                        maximumFractionDigits: 2 
+                      })}{' '}{currencySymbol}
+                    </span>
                     {gain > 0 && (
                       <span className="gain-indicator positive">
                         (+{gain.toLocaleString('ru-RU', { 
@@ -181,15 +192,17 @@ export const DepositsTable: React.FC<DepositsTableProps> = ({ deposits, onRemove
                     }
                   </td>
                   <td className="income-cell" data-label="Месячный доход">
-                    {monthlyIncome.toLocaleString('ru-RU', { 
-                      minimumFractionDigits: 2, 
-                      maximumFractionDigits: 2 
-                    })} {currencySymbol}
+                    <span className="amount-with-currency">
+                      {monthlyIncome.toLocaleString('ru-RU', { 
+                        minimumFractionDigits: 2, 
+                        maximumFractionDigits: 2 
+                      })}{' '}{currencySymbol}
+                    </span>
                   </td>
                   <td data-label="Действия">
                     <button 
                       className="remove-btn" 
-                      onClick={() => handleRemove(deposit.id, deposit.name)}
+                      onClick={() => handleRemoveClick(deposit.id, deposit.name)}
                       title="Удалить"
                     >
                       ×
@@ -201,6 +214,12 @@ export const DepositsTable: React.FC<DepositsTableProps> = ({ deposits, onRemove
           </tbody>
         </table>
       </div>
+      <ConfirmDialog
+        open={!!deleteConfirm}
+        message={deleteConfirm ? `Вы уверены, что хотите удалить «${deleteConfirm.name}»?` : ''}
+        onConfirm={handleConfirmRemove}
+        onCancel={() => setDeleteConfirm(null)}
+      />
     </div>
   );
 };

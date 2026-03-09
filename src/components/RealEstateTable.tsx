@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { RealEstate } from '../types';
 import { calculatePriceChangePercent, calculateRealEstateRental, calculateRentalYield } from '../utils/calculations';
+import { ConfirmDialog } from './ConfirmDialog';
 import './RealEstateTable.css';
 
 interface RealEstateTableProps {
@@ -12,14 +13,20 @@ interface RealEstateTableProps {
 export const RealEstateTable: React.FC<RealEstateTableProps> = ({ realEstate, onRemove, onUpdateValue }) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<string>('');
+  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string } | null>(null);
 
   if (realEstate.length === 0) {
     return null;
   }
 
-  const handleRemove = (id: string, name: string) => {
-    if (window.confirm(`Вы уверены, что хотите удалить "${name}"?`)) {
-      onRemove(id);
+  const handleRemoveClick = (id: string, name: string) => {
+    setDeleteConfirm({ id, name });
+  };
+
+  const handleConfirmRemove = () => {
+    if (deleteConfirm) {
+      onRemove(deleteConfirm.id);
+      setDeleteConfirm(null);
     }
   };
 
@@ -168,7 +175,7 @@ export const RealEstateTable: React.FC<RealEstateTableProps> = ({ realEstate, on
                   <td data-label="Действия">
                     <button 
                       className="remove-btn" 
-                      onClick={() => handleRemove(property.id, property.name)}
+                      onClick={() => handleRemoveClick(property.id, property.name)}
                       title="Удалить"
                     >
                       ×
@@ -180,6 +187,12 @@ export const RealEstateTable: React.FC<RealEstateTableProps> = ({ realEstate, on
           </tbody>
         </table>
       </div>
+      <ConfirmDialog
+        open={!!deleteConfirm}
+        message={deleteConfirm ? `Вы уверены, что хотите удалить «${deleteConfirm.name}»?` : ''}
+        onConfirm={handleConfirmRemove}
+        onCancel={() => setDeleteConfirm(null)}
+      />
     </div>
   );
 };

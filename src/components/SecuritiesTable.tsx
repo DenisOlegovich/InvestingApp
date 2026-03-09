@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Security } from '../types';
 import { calculatePriceChange, calculatePriceChangePercent, calculateSecurityDividend } from '../utils/calculations';
+import { ConfirmDialog } from './ConfirmDialog';
 import './SecuritiesTable.css';
 
 interface SecuritiesTableProps {
@@ -18,14 +19,20 @@ export const SecuritiesTable: React.FC<SecuritiesTableProps> = ({
 }) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<string>('');
+  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string } | null>(null);
 
   if (securities.length === 0) {
     return null;
   }
 
-  const handleRemove = (id: string, name: string) => {
-    if (window.confirm(`Вы уверены, что хотите удалить "${name}"?`)) {
-      onRemove(id);
+  const handleRemoveClick = (id: string, name: string) => {
+    setDeleteConfirm({ id, name });
+  };
+
+  const handleConfirmRemove = () => {
+    if (deleteConfirm) {
+      onRemove(deleteConfirm.id);
+      setDeleteConfirm(null);
     }
   };
 
@@ -191,7 +198,7 @@ export const SecuritiesTable: React.FC<SecuritiesTableProps> = ({
                   <td data-label="Действия">
                     <button 
                       className="remove-btn" 
-                      onClick={() => handleRemove(security.id, security.name)}
+                      onClick={() => handleRemoveClick(security.id, security.name)}
                       title="Удалить"
                     >
                       ×
@@ -203,6 +210,12 @@ export const SecuritiesTable: React.FC<SecuritiesTableProps> = ({
           </tbody>
         </table>
       </div>
+      <ConfirmDialog
+        open={!!deleteConfirm}
+        message={deleteConfirm ? `Вы уверены, что хотите удалить «${deleteConfirm.name}»?` : ''}
+        onConfirm={handleConfirmRemove}
+        onCancel={() => setDeleteConfirm(null)}
+      />
     </div>
   );
 };

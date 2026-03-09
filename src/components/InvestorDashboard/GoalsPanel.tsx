@@ -1,10 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import type { Goal } from '../../types/investor';
-import { extendedAPI } from '../../services/api';
-
-function fmtRub(n: number): string {
-  return n.toLocaleString('ru-RU', { maximumFractionDigits: 0 }) + ' ₽';
-}
+import { formatCurrencyRub } from '../../utils/formatNumber';
 
 function monthsBetween(now: Date, target: Date): number {
   const y = target.getFullYear() - now.getFullYear();
@@ -15,8 +11,7 @@ function monthsBetween(now: Date, target: Date): number {
 export const GoalsPanel: React.FC<{
   goals: Goal[];
   onChange: (goals: Goal[]) => void;
-  userId?: number;
-}> = ({ goals, onChange, userId }) => {
+}> = ({ goals, onChange }) => {
   const [name, setName] = useState('');
   const [targetAmountRub, setTargetAmountRub] = useState<number>(1_000_000);
   const [currentAmountRub, setCurrentAmountRub] = useState<number>(0);
@@ -25,12 +20,11 @@ export const GoalsPanel: React.FC<{
 
   const now = useMemo(() => new Date(), []);
 
-
-  const addGoal = async () => {
+  const addGoal = () => {
     const trimmed = name.trim();
     if (!trimmed) return;
     const g: Goal = {
-      id: '',
+      id: crypto.randomUUID(),
       name: trimmed,
       targetAmountRub: Math.max(0, Number(targetAmountRub) || 0),
       currentAmountRub: Math.max(0, Number(currentAmountRub) || 0),
@@ -38,30 +32,11 @@ export const GoalsPanel: React.FC<{
       monthlyContributionRub: Math.max(0, Number(monthlyContributionRub) || 0) || undefined,
       createdAt: new Date().toISOString(),
     };
-    if (userId) {
-      try {
-        const res = await extendedAPI.goals.create(g) as { id: string };
-        g.id = res.id;
-        onChange([{ ...g }, ...goals]);
-      } catch (e) {
-        g.id = crypto.randomUUID();
-        onChange([g, ...goals]);
-      }
-    } else {
-      g.id = crypto.randomUUID();
-      onChange([g, ...goals]);
-    }
+    onChange([g, ...goals]);
     setName('');
   };
 
-  const removeGoal = async (id: string) => {
-    if (userId) {
-      try {
-        await extendedAPI.goals.delete(id);
-      } catch (_) {}
-    }
-    onChange(goals.filter(g => g.id !== id));
-  };
+  const removeGoal = (id: string) => onChange(goals.filter(g => g.id !== id));
 
   return (
     <div className="panel">
@@ -142,7 +117,7 @@ export const GoalsPanel: React.FC<{
                 <div className="left" style={{ width: '100%' }}>
                   <div className="title">{g.name}</div>
                   <div className="sub">
-                    {fmtRub(g.currentAmountRub)} из {fmtRub(g.targetAmountRub)}
+                    {formatCurrencyRub(g.currentAmountRub)} из {formatCurrencyRub(g.targetAmountRub)}
                     {g.targetDate ? ` • дедлайн: ${g.targetDate}` : ''}
                   </div>
                   <div className="progress" aria-label="progress">
@@ -150,9 +125,9 @@ export const GoalsPanel: React.FC<{
                   </div>
                   <div className="sub">
                     {requiredMonthly !== null
-                      ? `Нужно откладывать ≈ ${fmtRub(requiredMonthly)} / мес`
+                      ? `Нужно откладывать ≈ ${formatCurrencyRub(requiredMonthly)} / мес`
                       : g.monthlyContributionRub
-                        ? `План: ${fmtRub(g.monthlyContributionRub)} / мес`
+                        ? `План: ${formatCurrencyRub(g.monthlyContributionRub)} / мес`
                         : 'Задай дедлайн или взнос — покажу прогноз'}
                   </div>
                 </div>
