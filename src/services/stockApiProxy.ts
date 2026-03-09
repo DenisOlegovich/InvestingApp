@@ -26,17 +26,13 @@ export async function fetchStockDataViaProxy(ticker: string): Promise<StockQuote
     // 1. Twelve Data API (бесплатный тариф)
     const twelveData = await fetchTwelveData(normalizedTicker);
     if (twelveData) return twelveData;
-  } catch (e) {
-    console.log('Twelve Data недоступен');
-  }
+  } catch {}
 
   try {
     // 2. Polygon.io (бесплатный тариф)
     const polygonData = await fetchPolygon(normalizedTicker);
     if (polygonData) return polygonData;
-  } catch (e) {
-    console.log('Polygon.io недоступен');
-  }
+  } catch {}
 
   return null;
 }

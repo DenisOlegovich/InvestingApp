@@ -41,11 +41,11 @@ export const IntradayPortfolioChart: React.FC<IntradayPortfolioChartProps> = ({
     }
     byDate.set(todayKey, currentValue);
 
-    if (valueAtOpen > 0 && stored.length === 0) {
-      const yesterday = new Date(today);
-      yesterday.setDate(yesterday.getDate() - 1);
-      const yesterdayKey = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
-      byDate.set(yesterdayKey, valueAtOpen);
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayKey = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
+    if (!byDate.has(yesterdayKey)) {
+      byDate.set(yesterdayKey, valueAtOpen > 0 ? valueAtOpen : currentValue);
     }
 
     const points: LineChartPoint[] = [];

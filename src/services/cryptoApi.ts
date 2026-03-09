@@ -26,9 +26,7 @@ export async function fetchCryptoData(symbol: string): Promise<CryptoQuote | nul
     if (coinGeckoData) {
       return coinGeckoData;
     }
-  } catch (e) {
-    console.log('CoinGecko API недоступен:', e);
-  }
+  } catch {}
 
   // 2. Binance API (для популярных криптовалют)
   try {
@@ -36,9 +34,7 @@ export async function fetchCryptoData(symbol: string): Promise<CryptoQuote | nul
     if (binanceData) {
       return binanceData;
     }
-  } catch (e) {
-    console.log('Binance API недоступен:', e);
-  }
+  } catch {}
 
   // 3. CryptoCompare API
   try {
@@ -46,9 +42,7 @@ export async function fetchCryptoData(symbol: string): Promise<CryptoQuote | nul
     if (cryptoCompareData) {
       return cryptoCompareData;
     }
-  } catch (e) {
-    console.log('CryptoCompare API недоступен:', e);
-  }
+  } catch {}
 
   return null;
 }

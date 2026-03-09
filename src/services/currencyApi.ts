@@ -86,24 +86,13 @@ function getDefaultRates(): ExchangeRates {
 export async function fetchExchangeRates(): Promise<ExchangeRates> {
   // Сначала пробуем ЦБ РФ (наиболее точный для рубля)
   const cbrRates = await fetchCBRRates();
-  if (cbrRates) {
-    console.log('Exchange rates from CBR:', cbrRates);
-    return cbrRates;
-  }
+  if (cbrRates) return cbrRates;
 
-  // Затем пробуем exchangerate-api
   const exchangeRates = await fetchExchangeRateAPI();
-  if (exchangeRates) {
-    console.log('Exchange rates from ExchangeRate API:', exchangeRates);
-    return exchangeRates;
-  }
+  if (exchangeRates) return exchangeRates;
 
-  // Затем пробуем Frankfurter
   const frankfurterRates = await fetchFrankfurterAPI();
-  if (frankfurterRates) {
-    console.log('Exchange rates from Frankfurter:', frankfurterRates);
-    return frankfurterRates;
-  }
+  if (frankfurterRates) return frankfurterRates;
 
   // Если все API недоступны, используем дефолтные курсы
   console.warn('All currency APIs failed, using default rates');

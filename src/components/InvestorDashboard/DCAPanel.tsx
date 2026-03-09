@@ -18,13 +18,6 @@ export const DCAPanel: React.FC<{
 
   const gain = futureValue - currentPortfolioValue - totalContributions;
 
-  const skipMonths = 3;
-  const futureValueIfSkip = monthlyRate > 0
-    ? currentPortfolioValue * Math.pow(1 + monthlyRate, months) +
-      monthlyAmount * ((Math.pow(1 + monthlyRate, months - skipMonths) - 1) / monthlyRate)
-    : currentPortfolioValue + monthlyAmount * (months - skipMonths);
-  const lossFromSkip = futureValue - futureValueIfSkip;
-
   return (
     <div className="panel">
       <h2>Планировщик DCA</h2>
@@ -74,8 +67,6 @@ export const DCAPanel: React.FC<{
           <span className="v">{formatCurrencyRub(futureValue)}</span>
           <span className="k">Прирост (дивиденды/рост)</span>
           <span className="v pill positive">{formatCurrencyRub(gain)}</span>
-          <span className="k">Если пропустить {skipMonths} мес. взносов</span>
-          <span className="v pill negative">−{formatCurrencyRub(lossFromSkip)}</span>
         </div>
       </div>
     </div>

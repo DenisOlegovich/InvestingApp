@@ -1,0 +1,92 @@
+.tools-panel {
+  max-width: 600px;
+}
+
+.tools-panel h2 {
+  margin: 0 0 24px;
+  font-size: 24px;
+  color: #e0e0e0;
+}
+
+.tools-section {
+  margin-bottom: 28px;
+}
+
+.tools-section h3 {
+  margin: 0 0 12px;
+  font-size: 16px;
+  color: #b0b0b0;
+}
+
+.tools-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.tool-btn {
+  padding: 10px 18px;
+  background: rgba(79, 172, 254, 0.2);
+  border: 1px solid rgba(79, 172, 254, 0.4);
+  border-radius: 8px;
+  color: #4facfe;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.tool-btn:hover {
+  background: rgba(79, 172, 254, 0.3);
+}
+
+.tax-report {
+  padding: 12px;
+  background: rgba(26, 31, 58, 0.4);
+  border-radius: 8px;
+  margin-top: 8px;
+}
+
+.tax-report p {
+  margin: 4px 0;
+}
+
+.tools-hint {
+  display: block;
+  margin-top: 8px;
+  font-size: 12px;
+  color: #888;
+}
+
+.tools-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 300px;
+}
+
+.tools-form label {
+  font-size: 13px;
+  color: #b0b0b0;
+}
+
+.tools-form input {
+  padding: 10px 12px;
+  background: rgba(15, 23, 41, 0.6);
+  border: 1px solid rgba(79, 172, 254, 0.3);
+  border-radius: 6px;
+  color: #e0e0e0;
+  font-size: 14px;
+}
+
+.calc-result {
+  margin-top: 12px;
+  padding: 12px;
+  background: rgba(76, 175, 80, 0.15);
+  border-radius: 8px;
+  font-size: 14px;
+  color: #a5d6a7;
+}
+
+.calc-result strong {
+  color: #4caf50;
+}
