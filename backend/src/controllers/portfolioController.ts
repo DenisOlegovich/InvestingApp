@@ -1,8 +1,10 @@
 import Portfolio from '../models/Portfolio.js';
+import type { AuthRequest } from '../types/index.js';
+import type { Response } from 'express';
 
-// Получить весь портфель пользователя
-export const getPortfolio = (req, res) => {
+export const getPortfolio = (req: AuthRequest, res: Response): void | Response => {
   try {
+    if (!req.user) return res.status(401).json({ error: 'Требуется авторизация' });
     const portfolio = Portfolio.getByUserId(req.user.id);
     res.json(portfolio);
   } catch (error) {
@@ -11,24 +13,21 @@ export const getPortfolio = (req, res) => {
   }
 };
 
-// Добавить ценную бумагу
-export const addSecurity = (req, res) => {
+export const addSecurity = (req: AuthRequest, res: Response): void | Response => {
   try {
+    if (!req.user) return res.status(401).json({ error: 'Требуется авторизация' });
     const securityId = Portfolio.addSecurity(req.user.id, req.body);
-    res.status(201).json({ 
-      message: 'Ценная бумага добавлена',
-      id: securityId.toString()
-    });
+    res.status(201).json({ message: 'Ценная бумага добавлена', id: securityId.toString() });
   } catch (error) {
     console.error('Ошибка добавления ценной бумаги:', error);
     res.status(500).json({ error: 'Ошибка при добавлении ценной бумаги' });
   }
 };
 
-// Обновить ценную бумагу
-export const updateSecurity = (req, res) => {
+export const updateSecurity = (req: AuthRequest, res: Response): void | Response => {
   try {
-    Portfolio.updateSecurity(req.params.id, req.user.id, req.body);
+    if (!req.user) return res.status(401).json({ error: 'Требуется авторизация' });
+    Portfolio.updateSecurity(String(req.params.id), req.user.id, req.body);
     res.json({ message: 'Ценная бумага обновлена' });
   } catch (error) {
     console.error('Ошибка обновления ценной бумаги:', error);
@@ -36,10 +35,10 @@ export const updateSecurity = (req, res) => {
   }
 };
 
-// Удалить ценную бумагу
-export const deleteSecurity = (req, res) => {
+export const deleteSecurity = (req: AuthRequest, res: Response): void | Response => {
   try {
-    Portfolio.deleteSecurity(req.params.id, req.user.id);
+    if (!req.user) return res.status(401).json({ error: 'Требуется авторизация' });
+    Portfolio.deleteSecurity(String(req.params.id), req.user.id);
     res.json({ message: 'Ценная бумага удалена' });
   } catch (error) {
     console.error('Ошибка удаления ценной бумаги:', error);
@@ -47,23 +46,21 @@ export const deleteSecurity = (req, res) => {
   }
 };
 
-// Методы для недвижимости
-export const addRealEstate = (req, res) => {
+export const addRealEstate = (req: AuthRequest, res: Response): void | Response => {
   try {
+    if (!req.user) return res.status(401).json({ error: 'Требуется авторизация' });
     const id = Portfolio.addRealEstate(req.user.id, req.body);
-    res.status(201).json({ 
-      message: 'Недвижимость добавлена',
-      id: id.toString()
-    });
+    res.status(201).json({ message: 'Недвижимость добавлена', id: id.toString() });
   } catch (error) {
     console.error('Ошибка добавления недвижимости:', error);
     res.status(500).json({ error: 'Ошибка при добавлении недвижимости' });
   }
 };
 
-export const updateRealEstate = (req, res) => {
+export const updateRealEstate = (req: AuthRequest, res: Response): void | Response => {
   try {
-    Portfolio.updateRealEstate(req.params.id, req.user.id, req.body);
+    if (!req.user) return res.status(401).json({ error: 'Требуется авторизация' });
+    Portfolio.updateRealEstate(String(req.params.id), req.user.id, req.body);
     res.json({ message: 'Недвижимость обновлена' });
   } catch (error) {
     console.error('Ошибка обновления недвижимости:', error);
@@ -71,9 +68,10 @@ export const updateRealEstate = (req, res) => {
   }
 };
 
-export const deleteRealEstate = (req, res) => {
+export const deleteRealEstate = (req: AuthRequest, res: Response): void | Response => {
   try {
-    Portfolio.deleteRealEstate(req.params.id, req.user.id);
+    if (!req.user) return res.status(401).json({ error: 'Требуется авторизация' });
+    Portfolio.deleteRealEstate(String(req.params.id), req.user.id);
     res.json({ message: 'Недвижимость удалена' });
   } catch (error) {
     console.error('Ошибка удаления недвижимости:', error);
@@ -81,23 +79,21 @@ export const deleteRealEstate = (req, res) => {
   }
 };
 
-// Методы для депозитов
-export const addDeposit = (req, res) => {
+export const addDeposit = (req: AuthRequest, res: Response): void | Response => {
   try {
+    if (!req.user) return res.status(401).json({ error: 'Требуется авторизация' });
     const id = Portfolio.addDeposit(req.user.id, req.body);
-    res.status(201).json({ 
-      message: 'Депозит добавлен',
-      id: id.toString()
-    });
+    res.status(201).json({ message: 'Депозит добавлен', id: id.toString() });
   } catch (error) {
     console.error('Ошибка добавления депозита:', error);
     res.status(500).json({ error: 'Ошибка при добавлении депозита' });
   }
 };
 
-export const updateDeposit = (req, res) => {
+export const updateDeposit = (req: AuthRequest, res: Response): void | Response => {
   try {
-    Portfolio.updateDeposit(req.params.id, req.user.id, req.body);
+    if (!req.user) return res.status(401).json({ error: 'Требуется авторизация' });
+    Portfolio.updateDeposit(String(req.params.id), req.user.id, req.body);
     res.json({ message: 'Депозит обновлен' });
   } catch (error) {
     console.error('Ошибка обновления депозита:', error);
@@ -105,9 +101,10 @@ export const updateDeposit = (req, res) => {
   }
 };
 
-export const deleteDeposit = (req, res) => {
+export const deleteDeposit = (req: AuthRequest, res: Response): void | Response => {
   try {
-    Portfolio.deleteDeposit(req.params.id, req.user.id);
+    if (!req.user) return res.status(401).json({ error: 'Требуется авторизация' });
+    Portfolio.deleteDeposit(String(req.params.id), req.user.id);
     res.json({ message: 'Депозит удален' });
   } catch (error) {
     console.error('Ошибка удаления депозита:', error);
@@ -115,23 +112,21 @@ export const deleteDeposit = (req, res) => {
   }
 };
 
-// Методы для криптовалют
-export const addCryptocurrency = (req, res) => {
+export const addCryptocurrency = (req: AuthRequest, res: Response): void | Response => {
   try {
+    if (!req.user) return res.status(401).json({ error: 'Требуется авторизация' });
     const id = Portfolio.addCryptocurrency(req.user.id, req.body);
-    res.status(201).json({ 
-      message: 'Криптовалюта добавлена',
-      id: id.toString()
-    });
+    res.status(201).json({ message: 'Криптовалюта добавлена', id: id.toString() });
   } catch (error) {
     console.error('Ошибка добавления криптовалюты:', error);
     res.status(500).json({ error: 'Ошибка при добавлении криптовалюты' });
   }
 };
 
-export const updateCryptocurrency = (req, res) => {
+export const updateCryptocurrency = (req: AuthRequest, res: Response): void | Response => {
   try {
-    Portfolio.updateCryptocurrency(req.params.id, req.user.id, req.body);
+    if (!req.user) return res.status(401).json({ error: 'Требуется авторизация' });
+    Portfolio.updateCryptocurrency(String(req.params.id), req.user.id, req.body);
     res.json({ message: 'Криптовалюта обновлена' });
   } catch (error) {
     console.error('Ошибка обновления криптовалюты:', error);
@@ -139,13 +134,13 @@ export const updateCryptocurrency = (req, res) => {
   }
 };
 
-export const deleteCryptocurrency = (req, res) => {
+export const deleteCryptocurrency = (req: AuthRequest, res: Response): void | Response => {
   try {
-    Portfolio.deleteCryptocurrency(req.params.id, req.user.id);
+    if (!req.user) return res.status(401).json({ error: 'Требуется авторизация' });
+    Portfolio.deleteCryptocurrency(String(req.params.id), req.user.id);
     res.json({ message: 'Криптовалюта удалена' });
   } catch (error) {
     console.error('Ошибка удаления криптовалюты:', error);
     res.status(500).json({ error: 'Ошибка при удалении криптовалюты' });
   }
 };
-

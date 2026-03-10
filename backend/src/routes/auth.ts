@@ -5,7 +5,6 @@ import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Регистрация
 router.post('/register',
   [
     body('email').isEmail().withMessage('Неверный формат email'),
@@ -15,7 +14,6 @@ router.post('/register',
   register
 );
 
-// Вход
 router.post('/login',
   [
     body('email').isEmail().withMessage('Неверный формат email'),
@@ -24,16 +22,13 @@ router.post('/login',
   login
 );
 
-// Получить текущего пользователя
 router.get('/me', authenticateToken, getMe);
 
-// Забыли пароль
 router.post('/forgot-password',
   [body('email').isEmail().withMessage('Неверный формат email')],
   forgotPassword
 );
 
-// Сброс пароля по токену
 router.post('/reset-password',
   [
     body('token').notEmpty().withMessage('Токен обязателен'),
@@ -43,4 +38,3 @@ router.post('/reset-password',
 );
 
 export default router;
-

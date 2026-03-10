@@ -2,41 +2,30 @@ import crypto from 'crypto';
 import User from '../models/User.js';
 import { generateToken } from '../middleware/auth.js';
 import { validationResult } from 'express-validator';
+import type { AuthRequest, ResetTokenData } from '../types/index.js';
+import type { Response } from 'express';
 
-// In-memory store for password reset tokens (email -> { token, expires })
-const resetTokens = new Map();
+const resetTokens = new Map<string, ResetTokenData>();
 
-export const register = async (req, res) => {
+export const register = async (req: AuthRequest, res: Response): Promise<void | Response> => {
   try {
-    // Проверка валидации
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
-
     const { email, password, name } = req.body;
-
-    // Проверка существования пользователя
     const existingUser = User.findByEmail(email);
     if (existingUser) {
       return res.status(400).json({ error: 'Пользователь с таким email уже существует' });
     }
-
-    // Создание пользователя
     const userId = await User.create({ email, password, name });
     const user = User.findById(userId);
-
-    // Генерация токена
+    if (!user) return res.status(500).json({ error: 'Ошибка при регистрации' });
     const token = generateToken(user);
-
     res.status(201).json({
       message: 'Пользователь успешно зарегистрирован',
       token,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name
-      }
+      user: { id: user.id, email: user.email, name: user.name }
     });
   } catch (error) {
     console.error('Ошибка регистрации:', error);
@@ -44,52 +33,40 @@ export const register = async (req, res) => {
   }
 };
 
-export const login = async (req, res) => {
+export const login = async (req: AuthRequest, res: Response): Promise<void | Response> => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
-
     const { email, password } = req.body;
-
-    // Поиск пользователя
     const user = User.findByEmail(email);
     if (!user) {
       return res.status(401).json({ error: 'Неверный email или пароль' });
     }
-
-    // Проверка пароля
     const isPasswordValid = await User.verifyPassword(password, user.password);
     if (!isPasswordValid) {
       return res.status(401).json({ error: 'Неверный email или пароль' });
     }
-
-    // Генерация токена
     const token = generateToken(user);
-
     res.json({
       message: 'Успешный вход',
       token,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name
-      }
+      user: { id: user.id, email: user.email, name: user.name }
     });
   } catch (error) {
-    console.error('Ошибка входа:', error?.message || error);
+    console.error('Ошибка входа:', error);
     res.status(500).json({ error: 'Ошибка при входе' });
   }
 };
 
-export const getMe = (req, res) => {
+export const getMe = (req: AuthRequest, res: Response): void | Response => {
   try {
+    if (!req.user) return res.status(401).json({ error: 'Требуется авторизация' });
     const user = User.findById(req.user.id);
     if (!user) {
       return res.status(404).json({ error: 'Пользователь не найден' });
     }
-
     res.json({
       id: user.id,
       email: user.email,
@@ -102,24 +79,20 @@ export const getMe = (req, res) => {
   }
 };
 
-export const forgotPassword = async (req, res) => {
+export const forgotPassword = async (req: AuthRequest, res: Response): Promise<void | Response> => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
-
     const { email } = req.body;
     const user = User.findByEmail(email);
     if (!user) {
       return res.json({ message: 'Если email существует, на него отправлена ссылка для сброса пароля' });
     }
-
     const token = crypto.randomBytes(32).toString('hex');
-    const expires = Date.now() + 60 * 60 * 1000; // 1 hour
+    const expires = Date.now() + 60 * 60 * 1000;
     resetTokens.set(email, { token, expires });
-
-    // В продакшене — отправить email. Для разработки возвращаем токен в ответе
     const resetLink = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password?token=${token}`;
     res.json({
       message: 'Если email существует, на него отправлена ссылка для сброса пароля',
@@ -132,16 +105,14 @@ export const forgotPassword = async (req, res) => {
   }
 };
 
-export const resetPassword = async (req, res) => {
+export const resetPassword = async (req: AuthRequest, res: Response): Promise<void | Response> => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
-
     const { token, newPassword } = req.body;
-
-    let foundEmail = null;
+    let foundEmail: string | null = null;
     for (const [email, data] of resetTokens.entries()) {
       if (data.token === token && data.expires > Date.now()) {
         foundEmail = email;
@@ -149,11 +120,9 @@ export const resetPassword = async (req, res) => {
         break;
       }
     }
-
     if (!foundEmail) {
       return res.status(400).json({ error: 'Недействительная или просроченная ссылка сброса пароля' });
     }
-
     await User.updatePassword(foundEmail, newPassword);
     res.json({ message: 'Пароль успешно изменён. Можете войти с новым паролем.' });
   } catch (error) {
@@ -161,4 +130,3 @@ export const resetPassword = async (req, res) => {
     res.status(500).json({ error: 'Ошибка при сбросе пароля' });
   }
 };
-

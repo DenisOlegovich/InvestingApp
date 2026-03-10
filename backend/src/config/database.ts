@@ -7,16 +7,10 @@ const __dirname = path.dirname(__filename);
 
 const dbPath = process.env.DB_PATH || path.join(__dirname, '../../database.sqlite');
 
-// Создаем подключение к базе данных
-const db = new Database(dbPath);
-
-// Включаем поддержку внешних ключей
+const db: InstanceType<typeof Database> = new Database(dbPath);
 db.pragma('foreign_keys = ON');
 
-// Инициализация схемы базы данных
-export function initDatabase() {
-
-  // Таблица пользователей
+export function initDatabase(): void {
   db.exec(`
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -28,7 +22,6 @@ export function initDatabase() {
     )
   `);
 
-  // Таблица ценных бумаг
   db.exec(`
     CREATE TABLE IF NOT EXISTS securities (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -42,13 +35,18 @@ export function initDatabase() {
       expected_dividend REAL NOT NULL,
       dividend_frequency TEXT NOT NULL CHECK(dividend_frequency IN ('monthly', 'quarterly', 'yearly')),
       currency TEXT NOT NULL CHECK(currency IN ('RUB', 'USD', 'EUR')),
+      sector TEXT,
+      country TEXT,
+      purchase_date TEXT,
+      coupon_rate REAL,
+      coupon_frequency TEXT,
+      maturity_date TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     )
   `);
 
-  // Таблица недвижимости
   db.exec(`
     CREATE TABLE IF NOT EXISTS real_estate (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -67,7 +65,6 @@ export function initDatabase() {
     )
   `);
 
-  // Таблица депозитов
   db.exec(`
     CREATE TABLE IF NOT EXISTS deposits (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -87,7 +84,6 @@ export function initDatabase() {
     )
   `);
 
-  // Таблица криптовалют
   db.exec(`
     CREATE TABLE IF NOT EXISTS cryptocurrencies (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -106,7 +102,6 @@ export function initDatabase() {
     )
   `);
 
-  // Таблица сделок (история операций)
   db.exec(`
     CREATE TABLE IF NOT EXISTS transactions (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -125,8 +120,6 @@ export function initDatabase() {
       FOREIGN KEY (security_id) REFERENCES securities(id) ON DELETE SET NULL
     )
   `);
-
 }
 
 export default db;
-
