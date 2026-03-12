@@ -106,7 +106,7 @@ export function AddSecurityScreen({ onAdded, onCancel }: Props) {
           disabled={loading}
         >
           {loading ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color="#0a0e1a" />
           ) : (
             <Text style={styles.buttonText}>Добавить</Text>
           )}
@@ -155,26 +155,31 @@ const styles = StyleSheet.create({
     color: '#e0e0e0',
   },
   button: {
-    backgroundColor: '#1976d2',
-    padding: 16,
-    borderRadius: 8,
+    backgroundColor: '#4facfe',
+    padding: 20,
+    minHeight: 56,
+    borderRadius: 12,
     alignItems: 'center',
+    justifyContent: 'center',
     marginTop: 8,
   },
   buttonDisabled: {
     opacity: 0.7,
   },
   buttonText: {
-    color: '#fff',
-    fontSize: 16,
+    color: '#0a0e1a',
+    fontSize: 18,
     fontWeight: '600',
   },
   cancelBtn: {
-    marginTop: 16,
+    marginTop: 20,
+    paddingVertical: 14,
+    minHeight: 48,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   cancelText: {
     color: '#888',
-    fontSize: 14,
+    fontSize: 16,
   },
 });

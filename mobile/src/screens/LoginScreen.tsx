@@ -14,9 +14,10 @@ import { authAPI } from '../services/api';
 interface Props {
   onSuccess: () => void;
   onSwitchToRegister: () => void;
+  onSwitchToForgotPassword?: () => void;
 }
 
-export function LoginScreen({ onSuccess, onSwitchToRegister }: Props) {
+export function LoginScreen({ onSuccess, onSwitchToRegister, onSwitchToForgotPassword }: Props) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -72,12 +73,17 @@ export function LoginScreen({ onSuccess, onSwitchToRegister }: Props) {
           disabled={loading}
         >
           {loading ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color="#0a0e1a" />
           ) : (
             <Text style={styles.buttonText}>Войти</Text>
           )}
         </TouchableOpacity>
 
+        {onSwitchToForgotPassword && (
+          <TouchableOpacity onPress={onSwitchToForgotPassword} style={styles.link}>
+            <Text style={styles.linkText}>Забыли пароль?</Text>
+          </TouchableOpacity>
+        )}
         <TouchableOpacity onPress={onSwitchToRegister} style={styles.link}>
           <Text style={styles.linkText}>Нет аккаунта? Зарегистрироваться</Text>
         </TouchableOpacity>
@@ -120,26 +126,31 @@ const styles = StyleSheet.create({
     color: '#e0e0e0',
   },
   button: {
-    backgroundColor: '#1976d2',
-    padding: 16,
-    borderRadius: 8,
+    backgroundColor: '#4facfe',
+    padding: 20,
+    minHeight: 56,
+    borderRadius: 12,
     alignItems: 'center',
+    justifyContent: 'center',
     marginTop: 8,
   },
   buttonDisabled: {
     opacity: 0.7,
   },
   buttonText: {
-    color: '#fff',
-    fontSize: 16,
+    color: '#0a0e1a',
+    fontSize: 18,
     fontWeight: '600',
   },
   link: {
-    marginTop: 20,
+    marginTop: 24,
+    paddingVertical: 12,
+    minHeight: 48,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   linkText: {
     color: '#4facfe',
-    fontSize: 14,
+    fontSize: 16,
   },
 });

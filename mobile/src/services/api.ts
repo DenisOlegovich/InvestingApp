@@ -1,8 +1,9 @@
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import type { Security, RealEstate, Deposit, Crypto, Portfolio, User } from '../types';
+import type { Security, RealEstate, Deposit, Crypto, Portfolio, User, Transaction } from '../types';
 
-// iOS Simulator: localhost, Android Emulator: 10.0.2.2 (host machine)
+// iOS Simulator: localhost. Android Emulator: 10.0.2.2.
+// ФИЗ. УСТРОЙСТВО: замени на IP компьютера в сети, напр. 'http://192.168.1.100:3001'
 const API_BASE = Platform.OS === 'android' ? 'http://10.0.2.2:3001' : 'http://localhost:3001';
 const API_URL = `${API_BASE}/api`;
 
@@ -85,6 +86,32 @@ export const authAPI = {
   logout: async () => {
     await removeToken();
   },
+
+  forgotPassword: async (email: string) => {
+    const res = await fetch(`${API_URL}/auth/forgot-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Ошибка запроса');
+    }
+    return res.json();
+  },
+
+  resetPassword: async (token: string, newPassword: string) => {
+    const res = await fetch(`${API_URL}/auth/reset-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, newPassword }),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Ошибка сброса');
+    }
+    return res.json();
+  },
 };
 
 export const portfolioAPI = {
@@ -99,6 +126,13 @@ export const portfolioAPI = {
     });
   },
 
+  updateSecurity: async (id: string, updates: Partial<Security>) => {
+    return fetchWithAuth(`/portfolio/securities/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(updates),
+    });
+  },
+
   deleteSecurity: async (id: string) => {
     return fetchWithAuth(`/portfolio/securities/${id}`, { method: 'DELETE' });
   },
@@ -107,6 +141,13 @@ export const portfolioAPI = {
     return fetchWithAuth<{ id: string }>('/portfolio/real-estate', {
       method: 'POST',
       body: JSON.stringify(data),
+    });
+  },
+
+  updateRealEstate: async (id: string, updates: Partial<RealEstate>) => {
+    return fetchWithAuth(`/portfolio/real-estate/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(updates),
     });
   },
 
@@ -121,6 +162,13 @@ export const portfolioAPI = {
     });
   },
 
+  updateDeposit: async (id: string, updates: Partial<Deposit>) => {
+    return fetchWithAuth(`/portfolio/deposits/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(updates),
+    });
+  },
+
   deleteDeposit: async (id: string) => {
     return fetchWithAuth(`/portfolio/deposits/${id}`, { method: 'DELETE' });
   },
@@ -132,7 +180,29 @@ export const portfolioAPI = {
     });
   },
 
+  updateCryptocurrency: async (id: string, updates: Partial<Crypto>) => {
+    return fetchWithAuth(`/portfolio/cryptocurrencies/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(updates),
+    });
+  },
+
   deleteCryptocurrency: async (id: string) => {
     return fetchWithAuth(`/portfolio/cryptocurrencies/${id}`, { method: 'DELETE' });
+  },
+
+  getTransactions: async (): Promise<Transaction[]> => {
+    return fetchWithAuth<Transaction[]>('/portfolio/transactions');
+  },
+
+  addTransaction: async (tx: Omit<Transaction, 'id' | 'createdAt'>) => {
+    return fetchWithAuth<{ id: string }>('/portfolio/transactions', {
+      method: 'POST',
+      body: JSON.stringify(tx),
+    });
+  },
+
+  deleteTransaction: async (id: string) => {
+    return fetchWithAuth(`/portfolio/transactions/${id}`, { method: 'DELETE' });
   },
 };

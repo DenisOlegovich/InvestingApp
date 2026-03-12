@@ -25,7 +25,7 @@ export default class User {
   }
 
   static findByEmail(email: string): UserRow | undefined {
-    const stmt = db.prepare('SELECT * FROM users WHERE email = ?');
+    const stmt = db.prepare('SELECT * FROM users WHERE LOWER(email) = LOWER(?)');
     return stmt.get(email) as UserRow | undefined;
   }
 
@@ -45,7 +45,7 @@ export default class User {
 
   static async updatePassword(email: string, newPassword: string): Promise<unknown> {
     const hashedPassword = await bcrypt.hash(newPassword, 10);
-    const stmt = db.prepare('UPDATE users SET password = ?, updated_at = CURRENT_TIMESTAMP WHERE email = ?');
+    const stmt = db.prepare('UPDATE users SET password = ?, updated_at = CURRENT_TIMESTAMP WHERE LOWER(email) = LOWER(?)');
     return stmt.run(hashedPassword, email);
   }
 

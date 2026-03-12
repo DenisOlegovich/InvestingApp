@@ -1,15 +1,18 @@
-<<<<<<< Current (Your changes)
-=======
 import React, { useState, useEffect, useCallback } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
-import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, ActivityIndicator, StyleSheet, Alert } from 'react-native';
 
 import { LoginScreen } from './src/screens/LoginScreen';
 import { RegisterScreen } from './src/screens/RegisterScreen';
+import { ForgotPasswordScreen } from './src/screens/ForgotPasswordScreen';
+import { ResetPasswordScreen } from './src/screens/ResetPasswordScreen';
 import { PortfolioScreen } from './src/screens/PortfolioScreen';
 import { AddSecurityScreen } from './src/screens/AddSecurityScreen';
+import { AddRealEstateScreen } from './src/screens/AddRealEstateScreen';
+import { AddDepositScreen } from './src/screens/AddDepositScreen';
+import { AddCryptoScreen } from './src/screens/AddCryptoScreen';
 
 import { authAPI, portfolioAPI } from './src/services/api';
 import type { Portfolio, User } from './src/types';
@@ -26,10 +29,12 @@ async function loadUserAndPortfolio(): Promise<{ user: User; portfolio: Portfoli
 }
 
 export default function App() {
-  const [authView, setAuthView] = useState<'login' | 'register' | 'portfolio'>('login');
+  const [authView, setAuthView] = useState<'login' | 'register' | 'forgot-password' | 'reset-password' | 'portfolio'>('login');
+  const [resetToken, setResetToken] = useState('');
   const [portfolio, setPortfolio] = useState<Portfolio>(EMPTY_PORTFOLIO);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
 
   const handleAuthSuccess = useCallback(async () => {
     try {
@@ -95,6 +100,7 @@ export default function App() {
         <LoginScreen
           onSuccess={handleAuthSuccess}
           onSwitchToRegister={() => setAuthView('register')}
+          onSwitchToForgotPassword={() => setAuthView('forgot-password')}
         />
         <StatusBar style="light" />
       </>
@@ -107,6 +113,46 @@ export default function App() {
         <RegisterScreen
           onSuccess={handleAuthSuccess}
           onSwitchToLogin={() => setAuthView('login')}
+        />
+        <StatusBar style="light" />
+      </>
+    );
+  }
+
+  if (authView === 'forgot-password') {
+    return (
+      <>
+        <ForgotPasswordScreen
+          onSuccess={(msg, token) => {
+            if (token) {
+              setResetToken(token);
+              setAuthView('reset-password');
+            } else {
+              Alert.alert('Информация', msg);
+              setAuthView('login');
+            }
+          }}
+          onSwitchToLogin={() => setAuthView('login')}
+        />
+        <StatusBar style="light" />
+      </>
+    );
+  }
+
+  if (authView === 'reset-password' && resetToken) {
+    return (
+      <>
+        <ResetPasswordScreen
+          token={resetToken}
+          onSuccess={() => {
+            setResetToken('');
+            setAuthView('login');
+            Alert.alert('Успех', 'Пароль изменён');
+          }}
+          onSwitchToLogin={() => {
+            setResetToken('');
+            setAuthView('login');
+          }}
         />
         <StatusBar style="light" />
       </>
@@ -143,6 +189,11 @@ export default function App() {
                 user={user}
                 onLogout={handleLogout}
                 onAddSecurity={() => navigation.navigate('AddSecurity')}
+                onAddRealEstate={() => navigation.navigate('AddRealEstate')}
+                onAddDeposit={() => navigation.navigate('AddDeposit')}
+                onAddCrypto={() => navigation.navigate('AddCrypto')}
+                theme={theme}
+                onThemeToggle={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
               />
             ) : null
           }
@@ -150,6 +201,39 @@ export default function App() {
         <Stack.Screen name="AddSecurity" options={{ title: 'Добавить бумагу', presentation: 'modal' }}>
           {({ navigation }) => (
             <AddSecurityScreen
+              onAdded={() => {
+                refreshPortfolio();
+                navigation.goBack();
+              }}
+              onCancel={() => navigation.goBack()}
+            />
+          )}
+        </Stack.Screen>
+        <Stack.Screen name="AddRealEstate" options={{ title: 'Добавить недвижимость', presentation: 'modal' }}>
+          {({ navigation }) => (
+            <AddRealEstateScreen
+              onAdded={() => {
+                refreshPortfolio();
+                navigation.goBack();
+              }}
+              onCancel={() => navigation.goBack()}
+            />
+          )}
+        </Stack.Screen>
+        <Stack.Screen name="AddDeposit" options={{ title: 'Добавить депозит', presentation: 'modal' }}>
+          {({ navigation }) => (
+            <AddDepositScreen
+              onAdded={() => {
+                refreshPortfolio();
+                navigation.goBack();
+              }}
+              onCancel={() => navigation.goBack()}
+            />
+          )}
+        </Stack.Screen>
+        <Stack.Screen name="AddCrypto" options={{ title: 'Добавить криптовалюту', presentation: 'modal' }}>
+          {({ navigation }) => (
+            <AddCryptoScreen
               onAdded={() => {
                 refreshPortfolio();
                 navigation.goBack();
@@ -176,4 +260,3 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
 });
->>>>>>> Incoming (Background Agent changes)

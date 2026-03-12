@@ -19,6 +19,7 @@ export interface RealEstate {
   currentValue: number;
   purchasePrice?: number;
   purchaseDate?: string;
+  expectedRentalYield?: number;
   monthlyRent?: number;
 }
 
@@ -29,6 +30,8 @@ export interface Deposit {
   amount: number;
   interestRate: number;
   currency: 'RUB' | 'USD' | 'EUR';
+  openingDate?: string;
+  maturityDate?: string;
   capitalization: 'monthly' | 'quarterly' | 'yearly' | 'none';
   type: 'demand' | 'term';
 }
@@ -40,6 +43,9 @@ export interface Crypto {
   amount: number;
   currentPrice: number;
   previousPrice: number;
+  stakingYield?: number;
+  purchasePrice?: number;
+  purchaseDate?: string;
 }
 
 export interface Portfolio {
@@ -60,4 +66,19 @@ export interface User {
   id: number;
   email: string;
   name: string;
+  created_at?: string;
+}
+
+export interface Transaction {
+  id: string;
+  securityId?: string | null;
+  ticker: string;
+  name: string;
+  type: 'buy' | 'sell';
+  quantity: number;
+  pricePerUnit: number;
+  total: number;
+  currency: 'RUB' | 'USD' | 'EUR';
+  tradeDate: string;
+  createdAt?: string;
 }

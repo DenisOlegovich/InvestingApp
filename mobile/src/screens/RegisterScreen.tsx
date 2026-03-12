@@ -83,7 +83,7 @@ export function RegisterScreen({ onSuccess, onSwitchToLogin }: Props) {
           disabled={loading}
         >
           {loading ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color="#0a0e1a" />
           ) : (
             <Text style={styles.buttonText}>Зарегистрироваться</Text>
           )}
@@ -131,26 +131,31 @@ const styles = StyleSheet.create({
     color: '#e0e0e0',
   },
   button: {
-    backgroundColor: '#1976d2',
-    padding: 16,
-    borderRadius: 8,
+    backgroundColor: '#4facfe',
+    padding: 20,
+    minHeight: 56,
+    borderRadius: 12,
     alignItems: 'center',
+    justifyContent: 'center',
     marginTop: 8,
   },
   buttonDisabled: {
     opacity: 0.7,
   },
   buttonText: {
-    color: '#fff',
-    fontSize: 16,
+    color: '#0a0e1a',
+    fontSize: 18,
     fontWeight: '600',
   },
   link: {
-    marginTop: 20,
+    marginTop: 24,
+    paddingVertical: 12,
+    minHeight: 48,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   linkText: {
     color: '#4facfe',
-    fontSize: 14,
+    fontSize: 16,
   },
 });
