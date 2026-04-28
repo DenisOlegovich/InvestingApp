@@ -114,11 +114,11 @@ export const AllocationPanel: React.FC<{
               const diffPct = target - cur;
               const diffRub = (diffPct / 100) * total;
               const abs = Math.abs(diffRub);
-              const action = diffRub > 0 ? 'добавить' : diffRub < 0 ? 'снизить' : 'держать';
+              const action = diffRub > 0 ? 'купить' : diffRub < 0 ? 'продать' : 'держать';
               const headline =
                 action === 'держать'
                   ? `${LABELS[k]} — ок`
-                  : `${LABELS[k]} — ${action} ≈ ${formatCurrencyRub(abs)}`;
+                  : `${LABELS[k]} — ${action} на ≈ ${formatCurrencyRub(abs)}`;
               return (
                 <div key={k} className="list-item">
                   <div className="left">

@@ -7,6 +7,7 @@ import type {
   User,
   Transaction,
 } from "../types";
+import type { Alert, BondCoupon, InvestDiaryEntry } from "../types/investor";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
 
@@ -227,5 +228,119 @@ export const portfolioAPI = {
     return fetchWithAuth(`/portfolio/transactions/${id}`, {
       method: "DELETE",
     });
+  },
+};
+
+const LS_ALERTS = "investor_ext_alerts";
+const LS_COUPONS = "investor_ext_bond_coupons";
+const LS_DIARY = "investor_ext_diary";
+const LS_RISK = "investor_ext_risk_profile";
+
+function readLs<T>(key: string, fallback: T): T {
+  try {
+    const s = localStorage.getItem(key);
+    return s ? (JSON.parse(s) as T) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function writeLs(key: string, value: unknown): void {
+  localStorage.setItem(key, JSON.stringify(value));
+}
+
+function newId(): string {
+  return globalThis.crypto?.randomUUID?.() ?? `id-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
+/** Расширенные фичи дашборда: локально в localStorage (бэкенд может быть подключён позже). */
+export const extendedAPI = {
+  alerts: {
+    get: async (): Promise<Alert[]> => readLs<Alert[]>(LS_ALERTS, []),
+    create: async (form: {
+      type: Alert["type"];
+      tickerOrSymbol: string;
+      thresholdPercent: number;
+      targetValue: number;
+    }): Promise<void> => {
+      const list = readLs<Alert[]>(LS_ALERTS, []);
+      list.push({
+        id: newId(),
+        type: form.type,
+        tickerOrSymbol: form.tickerOrSymbol,
+        thresholdPercent: form.thresholdPercent,
+        targetValue: form.targetValue,
+        isActive: true,
+      });
+      writeLs(LS_ALERTS, list);
+    },
+    delete: async (id: string): Promise<void> => {
+      writeLs(
+        LS_ALERTS,
+        readLs<Alert[]>(LS_ALERTS, []).filter((a) => a.id !== id),
+      );
+    },
+    update: async (id: string, patch: Partial<Alert>): Promise<void> => {
+      const list = readLs<Alert[]>(LS_ALERTS, []);
+      const i = list.findIndex((a) => a.id === id);
+      if (i >= 0) {
+        list[i] = { ...list[i], ...patch };
+        writeLs(LS_ALERTS, list);
+      }
+    },
+  },
+  bondCoupons: {
+    get: async (): Promise<BondCoupon[]> => readLs<BondCoupon[]>(LS_COUPONS, []),
+  },
+  diary: {
+    get: async (): Promise<InvestDiaryEntry[]> =>
+      readLs<InvestDiaryEntry[]>(LS_DIARY, []),
+    create: async (payload: {
+      entry: string;
+      ticker?: string;
+      whatWorked: boolean;
+    }): Promise<void> => {
+      const list = readLs<InvestDiaryEntry[]>(LS_DIARY, []);
+      list.unshift({
+        id: newId(),
+        entry: payload.entry,
+        ticker: payload.ticker,
+        whatWorked: payload.whatWorked,
+        createdAt: new Date().toISOString(),
+      });
+      writeLs(LS_DIARY, list);
+    },
+    delete: async (id: string): Promise<void> => {
+      writeLs(
+        LS_DIARY,
+        readLs<InvestDiaryEntry[]>(LS_DIARY, []).filter((e) => e.id !== id),
+      );
+    },
+  },
+  importCSV: async (
+    _csv: string,
+  ): Promise<{ imported: number; errors: { row: string; error: string }[] }> => {
+    return {
+      imported: 0,
+      errors: [
+        {
+          row: "—",
+          error:
+            "Импорт CSV на сервере не настроен. Добавьте эндпоинт или используйте ручной ввод сделок.",
+        },
+      ],
+    };
+  },
+  riskProfile: {
+    upsert: async (payload: {
+      riskScore: number;
+      recommendedSecurities: number;
+      recommendedRealEstate: number;
+      recommendedDeposits: number;
+      recommendedCrypto: number;
+      answersJson: Record<string, number>;
+    }): Promise<void> => {
+      writeLs(LS_RISK, { ...payload, savedAt: new Date().toISOString() });
+    },
   },
 };

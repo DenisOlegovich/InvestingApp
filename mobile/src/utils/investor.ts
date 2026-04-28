@@ -112,6 +112,14 @@ export function estimateMonthlyIncomeNext12m(
   return result;
 }
 
+export function estimateAnnualDividendsRub(
+  securities: Security[],
+  rates: ExchangeRates
+): number {
+  const events = estimateDividendEventsNext12m(securities, rates);
+  return events.reduce((s, e) => s + e.amountInRub, 0);
+}
+
 export const DEFAULT_TARGETS: AllocationTargets = {
   byAssetClass: { securities: 50, realEstate: 20, deposits: 20, cryptocurrencies: 10 },
 };

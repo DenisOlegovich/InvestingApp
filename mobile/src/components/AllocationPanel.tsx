@@ -107,11 +107,11 @@ export function AllocationPanel({
             const diffRub = (diffPct / 100) * total;
             const abs = Math.abs(diffRub);
             const action =
-              diffRub > 0 ? 'добавить' : diffRub < 0 ? 'снизить' : 'держать';
+              diffRub > 0 ? 'купить' : diffRub < 0 ? 'продать' : 'держать';
             const headline =
               action === 'держать'
                 ? `${LABELS[k]} — ок`
-                : `${LABELS[k]} — ${action} ≈ ${formatCurrencyRub(abs)}`;
+                : `${LABELS[k]} — ${action} на ≈ ${formatCurrencyRub(abs)}`;
             return (
               <View key={k} style={styles.listItem}>
                 <View>

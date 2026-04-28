@@ -9,6 +9,14 @@ export interface Security {
   expectedDividend: number; // в процентах годовых
   dividendFrequency: "monthly" | "quarterly" | "yearly";
   currency: "RUB" | "USD" | "EUR"; // Валюта цены
+  /** Скринер, налоги */
+  sector?: string;
+  country?: string;
+  purchaseDate?: string;
+  /** Облигации: купон и погашение */
+  couponRate?: number;
+  couponFrequency?: "monthly" | "quarterly" | "semi-annual" | "yearly";
+  maturityDate?: string;
 }
 
 export interface RealEstate {

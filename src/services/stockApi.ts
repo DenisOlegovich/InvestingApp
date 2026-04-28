@@ -93,14 +93,14 @@ function getSearchQuery(query: string): string[] {
 }
 
 function parseQuotes(data: { quotes?: unknown[] }): SearchQuote[] {
-  const raw = data?.quotes || [];
+  const raw = (data?.quotes || []) as Record<string, unknown>[];
   return raw
-    .filter((item: { quoteType?: string }) => {
-      const t = item.quoteType || '';
+    .filter((item) => {
+      const t = (item.quoteType as string) || '';
       if (t === 'CRYPTOCURRENCY') return false;
       return ['EQUITY', 'ETF', 'FUND'].includes(t) || !t;
     })
-    .map((item: Record<string, unknown>) => ({
+    .map((item) => ({
       symbol: (item.symbol as string) || '',
       shortname: (item.shortname as string) || (item.longname as string) || '',
       longname: (item.longname as string) || (item.shortname as string),

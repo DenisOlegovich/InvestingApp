@@ -18,6 +18,7 @@ import { AddDepositForm } from "./AddDepositForm";
 import { AddCryptoForm } from "./AddCryptoForm";
 import {
   calculateTotalPortfolioValueInRUB,
+  calculatePortfolioValueAtOpenInRUB,
   calculateTotalExpectedIncomeInRUB,
 } from "../utils/calculations";
 import { updateMultipleStocks } from "../services/stockApi";
@@ -699,6 +700,7 @@ export const Portfolio: React.FC<PortfolioProps> = ({
         <ToolsPanel
           portfolio={portfolio}
           userName={user?.name ?? ""}
+          rates={rates}
           onImportSecurities={async (securities) => {
             const added: Security[] = [];
             for (const s of securities) {
@@ -725,7 +727,14 @@ export const Portfolio: React.FC<PortfolioProps> = ({
       )}
 
       {tab === "charts" && (
-        <PortfolioCharts portfolio={portfolio} exchangeRates={exchangeRates} />
+        <PortfolioCharts
+          portfolio={portfolio}
+          exchangeRates={exchangeRates}
+          targets={targets}
+          valueAtOpen={rates ? calculatePortfolioValueAtOpenInRUB(portfolio, rates) : 0}
+          currentValue={rates ? calculateTotalPortfolioValueInRUB(portfolio, rates) : 0}
+          userId={user?.id}
+        />
       )}
 
       {tab === "assets" && (

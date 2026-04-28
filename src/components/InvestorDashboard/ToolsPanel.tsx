@@ -1,23 +1,40 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import type { Portfolio } from '../../types';
+import type { ExchangeRates } from '../../services/currencyApi';
 import { exportPortfolioToJson, exportPortfolioToExcel, exportPortfolioToPdf } from '../../utils/export';
 import { parseSecuritiesCsv } from '../../utils/csvImport';
+import { estimateAnnualDividendsRub } from '../../utils/investor';
+import { calculateTotalPortfolioValueInRUB } from '../../utils/calculations';
 import { portfolioAPI } from '../../services/api';
+import { BondCalculatorPanel } from './BondCalculatorPanel';
+import { BacktestPanel } from './BacktestPanel';
 import './ToolsPanel.css';
 
 interface ToolsPanelProps {
   portfolio: Portfolio;
   userName: string;
+  rates?: ExchangeRates | null;
   onImportSecurities: (securities: Array<Omit<import('../../types').Security, 'id'>>) => void;
   onRestoreBackup?: (portfolio: Portfolio) => void;
 }
 
+const DEFAULT_INFLATION = 7.5;
+
 export const ToolsPanel: React.FC<ToolsPanelProps> = ({
   portfolio,
   userName,
+  rates,
   onImportSecurities,
   onRestoreBackup,
 }) => {
+  const portfolioValue = useMemo(
+    () => (rates ? calculateTotalPortfolioValueInRUB(portfolio, rates) : 0),
+    [portfolio, rates]
+  );
+  const annualDividends = useMemo(
+    () => (rates ? estimateAnnualDividendsRub(portfolio.securities, rates) : 0),
+    [portfolio.securities, rates]
+  );
   const [calcSum, setCalcSum] = useState('');
   const [calcRate, setCalcRate] = useState('');
   const [calcYears, setCalcYears] = useState('');
@@ -120,8 +137,9 @@ export const ToolsPanel: React.FC<ToolsPanelProps> = ({
     const sum = parseFloat(iisSum.replace(',', '.'));
     const years = parseFloat(iisYears.replace(',', '.'));
     if (!sum || !years) return;
-    const deduction = Math.min(sum * 0.13, 52000);
-    setIisResult({ deduction, total: sum + deduction });
+    const totalContrib = sum * years;
+    const totalDeduction = Math.min(totalContrib * 0.13, 52000 * years);
+    setIisResult({ deduction: totalDeduction, total: totalContrib + totalDeduction });
   };
 
   const saveAlertThreshold = (v: string) => {
@@ -235,18 +253,50 @@ export const ToolsPanel: React.FC<ToolsPanelProps> = ({
       </section>
 
       <section className="tools-section">
-        <h3>Налоговый отчёт (упрощённый)</h3>
+        <h3>Налоговый отчёт</h3>
         {taxReport !== null ? (
           <div className="tax-report">
             <p>Сделок: {taxReport.count}</p>
             <p>Покупки: {taxReport.buys.toLocaleString('ru-RU', { maximumFractionDigits: 2 })} ₽</p>
             <p>Продажи: {taxReport.sells.toLocaleString('ru-RU', { maximumFractionDigits: 2 })} ₽</p>
-            <p>Разница (приб./убыток): <strong>{taxReport.realized.toLocaleString('ru-RU', { maximumFractionDigits: 2 })} ₽</strong></p>
+            <p>Реализ. приб./убыток: <strong>{taxReport.realized.toLocaleString('ru-RU', { maximumFractionDigits: 2 })} ₽</strong></p>
+            <p>НДФЛ 13%: <strong>{Math.max(0, taxReport.realized * 0.13).toLocaleString('ru-RU', { maximumFractionDigits: 2 })} ₽</strong></p>
             <small className="tools-hint">Ориентировочно. Для точного расчёта используйте FIFO.</small>
           </div>
         ) : (
           <p>Загрузка...</p>
         )}
+      </section>
+
+      {rates && (
+        <section className="tools-section">
+          <h3>Отчёт по дивидендам (год)</h3>
+          <div className="tax-report">
+            <p>Прогноз годовых дивидендов: <strong>{annualDividends.toLocaleString('ru-RU', { maximumFractionDigits: 0 })} ₽</strong></p>
+            <p>Див. доходность: {portfolioValue > 0 ? ((annualDividends / portfolioValue) * 100).toFixed(2) : 0}%</p>
+          </div>
+        </section>
+      )}
+
+      {rates && (
+        <section className="tools-section">
+          <h3>Сравнение с инфляцией</h3>
+          <div className="tax-report">
+            <p>Инфляция (ориентир): {DEFAULT_INFLATION}%</p>
+            <p>Чтобы обогнать инфляцию, доходность портфеля должна быть &gt; {DEFAULT_INFLATION}% годовых.</p>
+            <p>Текущая див. доходность: {portfolioValue > 0 ? ((annualDividends / portfolioValue) * 100).toFixed(2) : 0}%</p>
+          </div>
+        </section>
+      )}
+
+      <section className="tools-section">
+        <h3>Калькулятор облигаций</h3>
+        <BondCalculatorPanel />
+      </section>
+
+      <section className="tools-section">
+        <h3>Backtesting DCA</h3>
+        <BacktestPanel initialCapital={portfolioValue} />
       </section>
 
       <section className="tools-section">

@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Portfolio } from '../types';
+import type { AllocationTargets } from '../types/investor';
 import {
   calculateDepositCurrentValue,
   calculateDepositMonthlyIncome,
@@ -8,14 +9,21 @@ import {
   calculateCryptoMonthlyIncome,
 } from '../utils/calculations';
 import { ExchangeRates, convertToRUB } from '../services/currencyApi';
+import { portfolioValueByAssetClassRub } from '../utils/investor';
 import { PieChart, PieChartData } from './PieChart';
 import { BarChart, BarChartData } from './BarChart';
+import { AllocationComparisonChart } from './AllocationComparisonChart';
+import { IntradayPortfolioChart } from './InvestorDashboard/IntradayPortfolioChart';
 import { formatCurrencyRub } from '../utils/formatNumber';
 import './PortfolioCharts.css';
 
 interface PortfolioChartsProps {
   portfolio: Portfolio;
   exchangeRates: ExchangeRates | null;
+  targets?: AllocationTargets;
+  valueAtOpen?: number;
+  currentValue?: number;
+  userId?: string | number;
 }
 
 const TYPE_LABELS: Record<string, string> = {
@@ -26,7 +34,20 @@ const TYPE_LABELS: Record<string, string> = {
 
 const INSTRUMENT_COLORS = ['#667eea', '#4caf50', '#ff9800', '#ef5350', '#9c27b0', '#00bcd4', '#8bc34a', '#e91e63'];
 
-export const PortfolioCharts: React.FC<PortfolioChartsProps> = ({ portfolio, exchangeRates }) => {
+const SECURITY_TYPE_LABELS: Record<string, string> = {
+  stock: 'Акции',
+  bond: 'Облигации',
+  etf: 'ETF',
+};
+
+export const PortfolioCharts: React.FC<PortfolioChartsProps> = ({
+  portfolio,
+  exchangeRates,
+  targets,
+  valueAtOpen = 0,
+  currentValue = 0,
+  userId,
+}) => {
   const rates = exchangeRates || { USD_RUB: 92.50, EUR_RUB: 100.00, lastUpdate: new Date() };
 
   const securitiesValueRub = portfolio.securities.reduce((sum, security) => {
@@ -139,6 +160,30 @@ export const PortfolioCharts: React.FC<PortfolioChartsProps> = ({ portfolio, exc
     })
   );
 
+  const securitiesByType = useMemo(() => {
+    const byType = portfolio.securities.reduce(
+      (acc, s) => {
+        const val = convertToRUB(s.currentPrice * s.quantity, s.currency, rates);
+        acc[s.type] = (acc[s.type] || 0) + val;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
+    return Object.entries(byType).map(([type, val]) => ({
+      label: SECURITY_TYPE_LABELS[type] || type,
+      value: val,
+      color: type === 'stock' ? '#667eea' : type === 'bond' ? '#4caf50' : '#ff9800',
+    }));
+  }, [portfolio.securities, rates]);
+
+  const allocationData = useMemo(() => {
+    if (!targets) return null;
+    const byClass = portfolioValueByAssetClassRub(portfolio, rates);
+    const total =
+      byClass.securities + byClass.realEstate + byClass.deposits + byClass.cryptocurrencies;
+    return { currentByClass: byClass, targetByClass: targets.byAssetClass, totalValue: total };
+  }, [portfolio, rates, targets]);
+
   const topHoldingsData: BarChartData[] = [
     ...portfolio.securities.map((s) => ({
       label: s.ticker || s.name,
@@ -204,6 +249,27 @@ export const PortfolioCharts: React.FC<PortfolioChartsProps> = ({ portfolio, exc
             data={incomeChartData}
             title="Распределение месячного дохода"
             valueFormatter={formatCurrencyRub}
+          />
+        )}
+        {portfolio.securities.length > 0 && securitiesByType.length > 0 && (
+          <PieChart
+            data={securitiesByType}
+            title="Ценные бумаги по типу"
+            valueFormatter={formatCurrencyRub}
+          />
+        )}
+        {allocationData && allocationData.totalValue > 0 && (
+          <AllocationComparisonChart
+            currentByClass={allocationData.currentByClass}
+            targetByClass={allocationData.targetByClass}
+            totalValue={allocationData.totalValue}
+          />
+        )}
+        {currentValue > 0 && (
+          <IntradayPortfolioChart
+            valueAtOpen={valueAtOpen}
+            currentValue={currentValue}
+            userId={userId}
           />
         )}
       </div>

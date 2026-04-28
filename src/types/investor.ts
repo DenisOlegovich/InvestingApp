@@ -31,3 +31,36 @@ export interface ChecklistItem {
   category: 'purchase' | 'rebalance' | 'tax';
 }
 
+export type AlertType =
+  | 'price'
+  | 'volatility'
+  | 'drawdown'
+  | 'dividend'
+  | 'rate'
+  | 'goal';
+
+export interface Alert {
+  id: string;
+  type: AlertType;
+  tickerOrSymbol: string;
+  thresholdPercent?: number;
+  targetValue?: number;
+  triggeredAt?: string;
+  isActive: boolean;
+}
+
+export interface BondCoupon {
+  securityId: string;
+  ticker: string;
+  paymentDate: string;
+  couponAmount: number;
+}
+
+export interface InvestDiaryEntry {
+  id: string;
+  ticker?: string;
+  entry: string;
+  whatWorked: boolean;
+  createdAt: string;
+}
+

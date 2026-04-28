@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -10,19 +10,35 @@ import {
   Alert,
 } from 'react-native';
 import type { Portfolio } from '../types';
+import type { ExchangeRates } from '../utils/currencyApi';
 import { portfolioAPI } from '../services/api';
 import { formatCurrencyRub } from '../utils/format';
 import { loadJson, saveJson } from '../utils/storage';
+import { estimateAnnualDividendsRub } from '../utils/investor';
+import { calculateTotalPortfolioValueInRUB } from '../utils/calculations';
+import { calculateNKD, estimateYTM } from '../utils/bondCalculations';
 
 const ALERT_KEY = 'investor_alert_threshold';
+const INFLATION = 7.5;
 
 export function ToolsPanel({
   portfolio,
   userName,
+  rates,
 }: {
   portfolio: Portfolio;
   userName: string;
+  rates?: ExchangeRates;
 }) {
+  const r = rates || { USD_RUB: 92.5, EUR_RUB: 100, lastUpdate: new Date() };
+  const portfolioValue = useMemo(
+    () => calculateTotalPortfolioValueInRUB(portfolio, r),
+    [portfolio, r]
+  );
+  const annualDividends = useMemo(
+    () => estimateAnnualDividendsRub(portfolio.securities, r),
+    [portfolio.securities, r]
+  );
   const [calcSum, setCalcSum] = useState('');
   const [calcRate, setCalcRate] = useState('');
   const [calcYears, setCalcYears] = useState('');
@@ -31,6 +47,15 @@ export function ToolsPanel({
   const [iisYears, setIisYears] = useState('');
   const [iisResult, setIisResult] = useState<{ deduction: number; total: number } | null>(null);
   const [alertThreshold, setAlertThreshold] = useState('5');
+  const [bondNominal, setBondNominal] = useState('1000');
+  const [bondPrice, setBondPrice] = useState('98');
+  const [bondCoupon, setBondCoupon] = useState('12');
+  const [bondYears, setBondYears] = useState('2');
+  const [bondDaysSince, setBondDaysSince] = useState('90');
+  const [bondDaysPeriod, setBondDaysPeriod] = useState('182');
+  const [dcaMonthly, setDcaMonthly] = useState('50000');
+  const [dcaMonths, setDcaMonths] = useState('60');
+  const [dcaReturn, setDcaReturn] = useState('0.8');
   const [taxReport, setTaxReport] = useState<{
     buys: number;
     sells: number;
@@ -94,9 +119,33 @@ export function ToolsPanel({
     const sum = parseFloat((iisSum || '').replace(',', '.'));
     const years = parseFloat((iisYears || '').replace(',', '.'));
     if (!sum || !years) return;
-    const deduction = Math.min(sum * years, 400000 * years);
-    setIisResult({ deduction, total: sum * years });
+    const totalContrib = sum * years;
+    const deduction = Math.min(totalContrib * 0.13, 52000 * years);
+    setIisResult({ deduction, total: totalContrib + deduction });
   };
+
+  const n = parseFloat(bondNominal) || 1000;
+  const bp = parseFloat(bondPrice) || 98;
+  const bc = parseFloat(bondCoupon) || 12;
+  const by = parseFloat(bondYears) || 2;
+  const bds = parseFloat(bondDaysSince) || 90;
+  const bdp = parseFloat(bondDaysPeriod) || 182;
+  const priceRub = (n * bp) / 100;
+  const nkd = calculateNKD(n, bc, 2, bds, bdp);
+  const ytmResult = estimateYTM(priceRub, n, bc, by);
+
+  const dm = parseFloat(dcaMonthly) || 0;
+  const dmonths = parseInt(dcaMonths, 10) || 60;
+  const dr = parseFloat(dcaReturn) || 0;
+  const monthlyRate = dr / 100;
+  const dcaTotal = monthlyRate > 0
+    ? (() => {
+        let v = portfolioValue * Math.pow(1 + monthlyRate, dmonths);
+        for (let i = 0; i < dmonths; i++) v += dm * Math.pow(1 + monthlyRate, dmonths - i - 1);
+        return v;
+      })()
+    : portfolioValue + dm * dmonths;
+  const lumpTotal = (portfolioValue + dm * dmonths) * Math.pow(1 + monthlyRate, dmonths);
 
   return (
     <ScrollView style={styles.scroll}>
@@ -207,11 +256,67 @@ export function ToolsPanel({
             >
               {formatCurrencyRub(taxReport.realized)}
             </Text>
+            <Text style={styles.k}>НДФЛ 13%</Text>
+            <Text style={styles.v}>
+              {formatCurrencyRub(Math.max(0, taxReport.realized * 0.13))}
+            </Text>
             <Text style={styles.k}>Сделок</Text>
             <Text style={styles.v}>{taxReport.count}</Text>
           </View>
         </View>
       )}
+
+      <View style={styles.section}>
+        <Text style={styles.subtitle}>Дивиденды (год)</Text>
+        <Text style={styles.result}>
+          Прогноз: {formatCurrencyRub(annualDividends)}
+        </Text>
+        {portfolioValue > 0 && (
+          <Text style={styles.muted}>
+            Див. доходность: {((annualDividends / portfolioValue) * 100).toFixed(2)}%
+          </Text>
+        )}
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.subtitle}>Инфляция</Text>
+        <Text style={styles.muted}>
+          Чтобы обогнать инфляцию (~{INFLATION}%), доходность должна быть выше.
+        </Text>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.subtitle}>Калькулятор облигаций</Text>
+        <Text style={styles.label}>Номинал, ₽</Text>
+        <TextInput style={styles.input} value={bondNominal} onChangeText={setBondNominal} keyboardType="numeric" placeholderTextColor="#666" />
+        <Text style={styles.label}>Цена, %</Text>
+        <TextInput style={styles.input} value={bondPrice} onChangeText={setBondPrice} keyboardType="numeric" placeholderTextColor="#666" />
+        <Text style={styles.label}>Купон, %</Text>
+        <TextInput style={styles.input} value={bondCoupon} onChangeText={setBondCoupon} keyboardType="numeric" placeholderTextColor="#666" />
+        <Text style={styles.label}>Лет до погашения</Text>
+        <TextInput style={styles.input} value={bondYears} onChangeText={setBondYears} keyboardType="numeric" placeholderTextColor="#666" />
+        <Text style={styles.label}>Дней с купона / в периоде</Text>
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          <TextInput style={[styles.input, { flex: 1 }]} value={bondDaysSince} onChangeText={setBondDaysSince} keyboardType="numeric" placeholderTextColor="#666" />
+          <TextInput style={[styles.input, { flex: 1 }]} value={bondDaysPeriod} onChangeText={setBondDaysPeriod} keyboardType="numeric" placeholderTextColor="#666" />
+        </View>
+        <Text style={styles.result}>
+          НКД: {formatCurrencyRub(nkd)} • К оплате: {formatCurrencyRub(priceRub + nkd)} • YTM: {ytmResult.toFixed(2)}%
+        </Text>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.subtitle}>Backtesting DCA</Text>
+        <Text style={styles.label}>Взнос/мес, ₽</Text>
+        <TextInput style={styles.input} value={dcaMonthly} onChangeText={setDcaMonthly} keyboardType="numeric" placeholderTextColor="#666" />
+        <Text style={styles.label}>Месяцев</Text>
+        <TextInput style={styles.input} value={dcaMonths} onChangeText={setDcaMonths} keyboardType="numeric" placeholderTextColor="#666" />
+        <Text style={styles.label}>Доходность в месяц, %</Text>
+        <TextInput style={styles.input} value={dcaReturn} onChangeText={setDcaReturn} keyboardType="numeric" placeholderTextColor="#666" />
+        <Text style={styles.result}>
+          DCA: {formatCurrencyRub(dcaTotal)} • Lump: {formatCurrencyRub(lumpTotal)}
+        </Text>
+      </View>
     </ScrollView>
   );
 }

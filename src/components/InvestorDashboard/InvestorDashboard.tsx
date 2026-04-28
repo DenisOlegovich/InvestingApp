@@ -5,6 +5,8 @@ import { computeDailyPnLRub, computePriceAlerts } from '../../utils/investor';
 import { formatCurrencyRub } from '../../utils/formatNumber';
 import { calculateTotalPortfolioValueInRUB, calculatePortfolioValueAtOpenInRUB } from '../../utils/calculations';
 import { IntradayPortfolioChart } from './IntradayPortfolioChart';
+import { BenchmarksPanel } from './BenchmarksPanel';
+import { getMonthlyPortfolioHistory } from '../../utils/intradayStorage';
 
 export const InvestorDashboard: React.FC<{
   portfolio: Portfolio;
@@ -15,6 +17,23 @@ export const InvestorDashboard: React.FC<{
   const alerts = useMemo(() => computePriceAlerts(portfolio, 5), [portfolio]);
   const valueAtOpen = useMemo(() => calculatePortfolioValueAtOpenInRUB(portfolio, rates), [portfolio, rates]);
   const currentValue = useMemo(() => calculateTotalPortfolioValueInRUB(portfolio, rates), [portfolio, rates]);
+
+  const portfolioReturns = useMemo(() => {
+    const history = getMonthlyPortfolioHistory(userId);
+    if (history.length < 2) return { ytd: 0, y1: 0 };
+    const now = new Date();
+    const firstOfYear = `${now.getFullYear()}-01-01`;
+    const oneYearAgo = new Date(now);
+    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+    const oneYearKey = `${oneYearAgo.getFullYear()}-${String(oneYearAgo.getMonth() + 1).padStart(2, '0')}-${String(oneYearAgo.getDate()).padStart(2, '0')}`;
+    const ytdPoints = history.filter((p) => p.date >= firstOfYear);
+    const y1Points = history.filter((p) => p.date >= oneYearKey);
+    const vYtdStart = ytdPoints[0]?.value ?? currentValue;
+    const vY1Start = y1Points[0]?.value ?? currentValue;
+    const ytd = vYtdStart > 0 ? ((currentValue - vYtdStart) / vYtdStart) * 100 : 0;
+    const y1 = vY1Start > 0 ? ((currentValue - vY1Start) / vY1Start) * 100 : 0;
+    return { ytd, y1 };
+  }, [currentValue, userId]);
 
   const pillClass = dailyPnL >= 0 ? 'pill positive' : 'pill negative';
 
@@ -89,11 +108,13 @@ export const InvestorDashboard: React.FC<{
             USD {rates.USD_RUB.toFixed(2)} • EUR {rates.EUR_RUB.toFixed(2)}
           </div>
         </div>
-        <div style={{ height: 12 }} />
-        <div className="muted">
-          Дальше можно добавить бенчмарки, налоги и импорт сделок — это уже “вторая итерация”.
-        </div>
       </div>
+
+      <BenchmarksPanel
+        portfolioValueRub={currentValue}
+        portfolioReturnYtdPercent={portfolioReturns.ytd}
+        portfolioReturn1yPercent={portfolioReturns.y1}
+      />
     </div>
   );
 };

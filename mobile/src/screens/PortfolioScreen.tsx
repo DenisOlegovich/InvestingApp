@@ -282,6 +282,11 @@ export function PortfolioScreen({
           <Text style={styles.k}>Курсы</Text>
           <Text style={styles.v}>USD {r.USD_RUB.toFixed(2)} • EUR {r.EUR_RUB.toFixed(2)}</Text>
         </View>
+        <View style={[styles.panel, { marginTop: 12 }]}>
+          <Text style={styles.panelTitle}>Бенчмарки</Text>
+          <Text style={styles.muted}>IMOEX ~8.5% YTD • S&P 500 ~15% YTD</Text>
+          <Text style={styles.muted}>Сравнение с историей портфеля — на вкладке Графики</Text>
+        </View>
       </View>
     </ScrollView>
   );
@@ -330,7 +335,14 @@ export function PortfolioScreen({
   );
 
   const renderCharts = () => (
-    <PortfolioCharts portfolio={portfolio} rates={r} />
+    <PortfolioCharts
+      portfolio={portfolio}
+      rates={r}
+      targets={targets}
+      currentValue={totalValue}
+      valueAtOpen={r ? totalValue - dailyPnL : 0}
+      userId={user.id}
+    />
   );
 
   const renderTabContent = () => {
@@ -367,7 +379,7 @@ export function PortfolioScreen({
       case 'notes':
         return <NotesPanel userId={user.id} />;
       case 'tools':
-        return <ToolsPanel portfolio={portfolio} userName={user.name} />;
+        return <ToolsPanel portfolio={portfolio} userName={user.name} rates={r} />;
       case 'transactions':
         return (
           <TransactionsPanel
