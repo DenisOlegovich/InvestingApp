@@ -76,7 +76,7 @@ export const InvestorDashboard: React.FC<{
 
         <div style={{ height: 12 }} />
         <div className="muted">
-          Подсказка: “дневное изменение” считается из `previousPrice → currentPrice`. Для депозитов и
+          Подсказка: «дневное изменение» считается из предыдущей цены → текущей цены. Для депозитов и
           недвижимости дневной P&L не считается.
         </div>
 

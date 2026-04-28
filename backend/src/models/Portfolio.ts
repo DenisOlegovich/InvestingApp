@@ -277,4 +277,23 @@ export default class Portfolio {
     const stmt = db.prepare('DELETE FROM cryptocurrencies WHERE id = ? AND user_id = ?');
     return stmt.run(id, userId);
   }
+
+  static getInvestorNotes(userId: number): string {
+    const row = db
+      .prepare('SELECT content FROM investor_notes WHERE user_id = ?')
+      .get(userId) as { content: string } | undefined;
+    return row?.content ?? '';
+  }
+
+  static upsertInvestorNotes(userId: number, content: string): void {
+    db.prepare(
+      `
+      INSERT INTO investor_notes (user_id, content, updated_at)
+      VALUES (?, ?, CURRENT_TIMESTAMP)
+      ON CONFLICT(user_id) DO UPDATE SET
+        content = excluded.content,
+        updated_at = CURRENT_TIMESTAMP
+    `,
+    ).run(userId, content);
+  }
 }

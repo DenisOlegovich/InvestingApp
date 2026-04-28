@@ -2,6 +2,7 @@ import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { initDatabase } from './config/database.js';
+import { isMailConfigured } from './services/mail.js';
 import authRoutes from './routes/auth.js';
 import portfolioRoutes from './routes/portfolio.js';
 import stocksRoutes from './routes/stocks.js';
@@ -57,4 +58,9 @@ app.listen(PORT, () => {
   console.log(`🚀 Сервер запущен на порту ${PORT}`);
   console.log(`📊 API доступен по адресу: http://localhost:${PORT}`);
   console.log(`🌐 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:5173'}`);
+  if (process.env.NODE_ENV === 'production' && !isMailConfigured()) {
+    console.warn(
+      '⚠️  SMTP не настроен: письма со ссылкой сброса пароля отправляться не будут. Задайте SMTP_* в .env',
+    );
+  }
 });

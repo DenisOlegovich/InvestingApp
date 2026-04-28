@@ -5,10 +5,6 @@
   padding: 16px;
 }
 
-[data-theme="light"] .line-chart-container {
-  border-color: rgba(107, 122, 144, 0.12);
-}
-
 .line-chart-title {
   font-size: 16px;
   margin-bottom: 12px;

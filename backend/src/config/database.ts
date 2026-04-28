@@ -120,6 +120,15 @@ export function initDatabase(): void {
       FOREIGN KEY (security_id) REFERENCES securities(id) ON DELETE SET NULL
     )
   `);
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS investor_notes (
+      user_id INTEGER PRIMARY KEY,
+      content TEXT NOT NULL DEFAULT '',
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    )
+  `);
 }
 
 export default db;

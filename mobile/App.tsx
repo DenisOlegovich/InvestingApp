@@ -34,7 +34,6 @@ export default function App() {
   const [portfolio, setPortfolio] = useState<Portfolio>(EMPTY_PORTFOLIO);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
 
   const handleAuthSuccess = useCallback(async () => {
     try {
@@ -192,8 +191,6 @@ export default function App() {
                 onAddRealEstate={() => navigation.navigate('AddRealEstate')}
                 onAddDeposit={() => navigation.navigate('AddDeposit')}
                 onAddCrypto={() => navigation.navigate('AddCrypto')}
-                theme={theme}
-                onThemeToggle={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
               />
             ) : null
           }

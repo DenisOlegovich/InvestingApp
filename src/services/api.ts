@@ -13,6 +13,8 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
 
 const getToken = (): string | null => localStorage.getItem("authToken");
 
+export const hasAuthToken = (): boolean => Boolean(getToken());
+
 export const saveToken = (token: string): void => {
   localStorage.setItem("authToken", token);
 };
@@ -227,6 +229,17 @@ export const portfolioAPI = {
   deleteTransaction: async (id: string) => {
     return fetchWithAuth(`/portfolio/transactions/${id}`, {
       method: "DELETE",
+    });
+  },
+
+  getNotes: async (): Promise<{ content: string }> => {
+    return fetchWithAuth<{ content: string }>("/portfolio/notes");
+  },
+
+  saveNotes: async (content: string): Promise<void> => {
+    await fetchWithAuth("/portfolio/notes", {
+      method: "PUT",
+      body: JSON.stringify({ content }),
     });
   },
 };

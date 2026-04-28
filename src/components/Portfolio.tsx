@@ -40,7 +40,6 @@ import { TransactionsPanel } from "./InvestorDashboard/TransactionsPanel";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
 import { DCAPanel } from "./InvestorDashboard/DCAPanel";
 import { ScenariosPanel } from "./InvestorDashboard/ScenariosPanel";
-import { useTheme } from "../contexts/ThemeContext";
 import type { AllocationTargets, Goal } from "../types/investor";
 import { DEFAULT_TARGETS, normalizeTargets } from "../utils/investor";
 import { loadJson, saveJson } from "../utils/storage";
@@ -85,7 +84,6 @@ export const Portfolio: React.FC<PortfolioProps> = ({
   const [tab, setTab] = useState<PortfolioTab>("dashboard");
   const [goals, setGoals] = useState<Goal[]>([]);
   const [targets, setTargets] = useState<AllocationTargets>(DEFAULT_TARGETS);
-  const { theme, setTheme } = useTheme();
 
   useKeyboardShortcuts({
     "Ctrl+1": () => setTab("dashboard"),
@@ -487,13 +485,6 @@ export const Portfolio: React.FC<PortfolioProps> = ({
           <h1>Мой инвестиционный портфель</h1>
           {user && (
             <div className="user-info">
-              <button
-                className="theme-toggle"
-                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                title={theme === 'dark' ? 'Светлая тема' : 'Тёмная тема'}
-              >
-                {theme === 'dark' ? '☀️' : '🌙'}
-              </button>
               <span className="user-name">👤 {user.name}</span>
               {onLogout && (
                 <button className="logout-btn" onClick={onLogout}>

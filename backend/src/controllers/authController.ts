@@ -4,6 +4,7 @@ import { generateToken } from '../middleware/auth.js';
 import { validationResult } from 'express-validator';
 import type { AuthRequest, ResetTokenData } from '../types/index.js';
 import type { Response } from 'express';
+import { isMailConfigured, sendPasswordResetEmail } from '../services/mail.js';
 
 const resetTokens = new Map<string, ResetTokenData>();
 
@@ -93,11 +94,41 @@ export const forgotPassword = async (req: AuthRequest, res: Response): Promise<v
     const token = crypto.randomBytes(32).toString('hex');
     const expires = Date.now() + 60 * 60 * 1000;
     resetTokens.set(email, { token, expires });
-    const resetLink = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password?token=${token}`;
-    res.json({
-      message: 'Если email существует, на него отправлена ссылка для сброса пароля',
-      resetToken: process.env.NODE_ENV !== 'production' ? token : undefined,
-      resetLink: process.env.NODE_ENV !== 'production' ? resetLink : undefined,
+    const baseUrl = (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/$/, '');
+    const resetLink = `${baseUrl}/reset-password?token=${token}`;
+
+    if (isMailConfigured()) {
+      try {
+        await sendPasswordResetEmail(user.email, resetLink);
+      } catch (err) {
+        console.error('Ошибка отправки письма сброса пароля:', err);
+        return res.status(500).json({
+          error:
+            'Не удалось отправить письмо. Проверьте настройки SMTP (логин, пароль, хост) и папку «Спам».',
+        });
+      }
+      return res.json({
+        message: 'Если email существует, на него отправлена ссылка для сброса пароля',
+      });
+    }
+
+    console.warn(
+      '[forgot-password] SMTP не настроен (SMTP_HOST, SMTP_USER, SMTP_PASS). Ссылка не отправлена по почте.',
+    );
+    console.warn('[forgot-password] Ссылка для', email, ':', resetLink);
+
+    if (process.env.NODE_ENV !== 'production') {
+      return res.json({
+        message:
+          'Почта не настроена на сервере — письмо не отправлено. Ниже ссылка только для разработки.',
+        resetToken: token,
+        resetLink,
+      });
+    }
+
+    return res.status(503).json({
+      error:
+        'Отправка почты не настроена на сервере. Задайте переменные SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS и при необходимости SMTP_FROM, SMTP_SECURE в окружении бэкенда. FRONTEND_URL должен указывать на адрес вашего сайта (куда вести ссылку сброса).',
     });
   } catch (error) {
     console.error('Ошибка forgot-password:', error);

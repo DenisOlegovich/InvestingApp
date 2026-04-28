@@ -45,8 +45,6 @@ interface Props {
   onAddRealEstate?: () => void;
   onAddDeposit?: () => void;
   onAddCrypto?: () => void;
-  theme?: 'dark' | 'light';
-  onThemeToggle?: () => void;
 }
 
 type Tab =
@@ -91,8 +89,6 @@ export function PortfolioScreen({
   onAddRealEstate,
   onAddDeposit,
   onAddCrypto,
-  theme = 'dark',
-  onThemeToggle,
 }: Props) {
   const [tab, setTab] = useState<Tab>('dashboard');
   const [refreshing, setRefreshing] = useState(false);
@@ -393,16 +389,11 @@ export function PortfolioScreen({
   };
 
   return (
-    <SafeAreaView style={[styles.container, theme === 'light' && styles.containerLight]} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
         <View>
           <Text style={styles.title}>Мой инвестиционный портфель</Text>
           <View style={styles.userRow}>
-            {onThemeToggle && (
-              <TouchableOpacity style={styles.themeBtn} onPress={onThemeToggle}>
-                <Text>{theme === 'dark' ? '☀️' : '🌙'}</Text>
-              </TouchableOpacity>
-            )}
             <Text style={styles.userName}>👤 {user.name}</Text>
             <TouchableOpacity onPress={onLogout} style={styles.logoutBtn}>
               <Text style={styles.logoutText}>Выйти</Text>
@@ -450,7 +441,6 @@ export function PortfolioScreen({
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0f1729' },
-  containerLight: { backgroundColor: '#eae6e0' },
   header: {
     padding: 20,
     borderBottomWidth: 1,
@@ -458,7 +448,6 @@ const styles = StyleSheet.create({
   },
   title: { fontSize: 22, fontWeight: '700', color: '#e0e0e0', marginBottom: 8 },
   userRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  themeBtn: { padding: 12, minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' },
   userName: { fontSize: 14, color: '#e0e0e0' },
   logoutBtn: { marginLeft: 'auto', paddingVertical: 10, paddingHorizontal: 16, minHeight: 44, justifyContent: 'center' },
   logoutText: { color: '#ff5252', fontSize: 16, fontWeight: '600' },

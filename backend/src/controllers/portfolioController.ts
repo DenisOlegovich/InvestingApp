@@ -144,3 +144,26 @@ export const deleteCryptocurrency = (req: AuthRequest, res: Response): void | Re
     res.status(500).json({ error: 'Ошибка при удалении криптовалюты' });
   }
 };
+
+export const getInvestorNotes = (req: AuthRequest, res: Response): void | Response => {
+  try {
+    if (!req.user) return res.status(401).json({ error: 'Требуется авторизация' });
+    const content = Portfolio.getInvestorNotes(req.user.id);
+    res.json({ content });
+  } catch (error) {
+    console.error('Ошибка чтения заметок:', error);
+    res.status(500).json({ error: 'Ошибка при чтении заметок' });
+  }
+};
+
+export const putInvestorNotes = (req: AuthRequest, res: Response): void | Response => {
+  try {
+    if (!req.user) return res.status(401).json({ error: 'Требуется авторизация' });
+    const content = typeof req.body?.content === 'string' ? req.body.content : '';
+    Portfolio.upsertInvestorNotes(req.user.id, content);
+    res.json({ message: 'Заметки сохранены' });
+  } catch (error) {
+    console.error('Ошибка сохранения заметок:', error);
+    res.status(500).json({ error: 'Ошибка при сохранении заметок' });
+  }
+};

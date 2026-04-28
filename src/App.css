@@ -4,8 +4,7 @@
   padding: 0;
 }
 
-:root,
-[data-theme="dark"] {
+:root {
   --app-bg: #0a0e1a;
   --app-bg2: #1a1f3a;
   --app-bg3: #0f1729;
@@ -14,17 +13,6 @@
   --app-accent: rgba(79, 172, 254, 0.3);
   --app-accent-strong: #4facfe;
   --app-card-bg: rgba(26, 31, 58, 0.55);
-}
-
-[data-theme="light"] {
-  --app-bg: #eae6e0;
-  --app-bg2: #e0dbd4;
-  --app-bg3: #d5cfc6;
-  --app-text: #4a5568;
-  --app-muted: #718096;
-  --app-accent: rgba(107, 122, 144, 0.15);
-  --app-accent-strong: #6b7a90;
-  --app-card-bg: rgba(240, 236, 230, 0.9);
 }
 
 body {
@@ -97,11 +85,6 @@ body {
   z-index: 0;
 }
 
-[data-theme="light"] .app::after {
-  background: radial-gradient(circle, rgba(107, 122, 144, 0.04) 0%, transparent 70%);
-  animation: none;
-}
-
 @keyframes float {
   0%, 100% {
     transform: translate(0, 0) rotate(0deg);
@@ -122,17 +105,6 @@ body {
   color: var(--app-text);
   font-size: 24px;
   font-weight: 500;
-}
-
-.theme-toggle {
-  background: var(--app-card-bg);
-  border: 1px solid var(--app-accent);
-  color: var(--app-text);
-  padding: 8px 14px;
-  border-radius: 10px;
-  font-weight: 600;
-  cursor: pointer;
-  margin-left: 8px;
 }
 
 code {

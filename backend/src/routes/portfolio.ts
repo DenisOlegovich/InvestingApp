@@ -13,7 +13,9 @@ import {
   deleteDeposit,
   addCryptocurrency,
   updateCryptocurrency,
-  deleteCryptocurrency
+  deleteCryptocurrency,
+  getInvestorNotes,
+  putInvestorNotes,
 } from '../controllers/portfolioController.js';
 import {
   getTransactions,
@@ -26,6 +28,9 @@ const router = express.Router();
 router.use(authenticateToken);
 
 router.get('/', getPortfolio);
+
+router.get('/notes', getInvestorNotes);
+router.put('/notes', putInvestorNotes);
 
 router.get('/transactions', getTransactions);
 router.post('/transactions',
